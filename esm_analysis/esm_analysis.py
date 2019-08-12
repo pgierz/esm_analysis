@@ -9,6 +9,7 @@ import os
 
 import cdo
 
+
 def walk_up(bottom):
     """
     mimic os.walk, but walk 'up' instead of down the directory tree
@@ -88,7 +89,7 @@ class EsmAnalysis(object):
         # Duh, of course it does -- you call the super init from the
         # subcomponents, dumbass...
         #
-        #self.initialize_analysis_components()
+        # self.initialize_analysis_components()
 
     def create_analysis_dir(self):
         """ Create the analysis directory and any intermediate directories if needed """
@@ -96,41 +97,112 @@ class EsmAnalysis(object):
             os.makedirs(self.ANALYSIS_DIR)
 
     def initialize_analysis_components(self):
+        """
+        Creates analysis objects for each component found in the ``OUTDATA_DIR`` directory.
+
+        It is assumed that the component analysis object can be initialized
+        without any arguments. If no class has been defined yet, a warning is
+        sent.
+        """
         for component in os.listdir(self.OUTDATA_DIR):
             try:
                 # XXX: I don't really like this, it'd be nicer with relative
                 # imports (maybe? I am not sure...)
-                comp_module = importlib.import_module("esm_analysis.components."+component)
-                self._analysis_components.append(getattr(comp_module, component.capitalize()+"Analysis")())
+                comp_module = importlib.import_module(
+                    "esm_analysis.components." + component
+                )
+                self._analysis_components.append(
+                    getattr(comp_module, component.capitalize() + "Analysis")()
+                )
             except:
                 logging.warning("Oops: no analysis class available for: %s" % component)
 
     def determine_variable_dict_from_code_files(self):
+        """
+        A generic method to create a dictionary containing file patterns and
+        variable information for each file pattern found in the ``OUTDATA_DIR``
+        folder.
+
+        Notes
+        -----
+        This is meant to be overloaded!! The default implementation works for
+        ECHAM6 and JSBACH. Maybe it is better to completely move this to just
+        those two classes, or a base class which both can build on.
+
+        Returns
+        -------
+        A nested dictionary. The outermost key is a file pattern, with the
+        value/inner key is the variable short name. The inner value is a
+        dictionary of code_number, levels, short_name, long_name.
+        """
         variables = {}
-        for f in glob.glob(self.OUTDATA_DIR+self.EXP_ID+"_"+self.NAME+"*.codes"):
-            file_stream = f.replace(self.OUTDATA_DIR, "").replace(self.EXP_ID+"_"+self.NAME+"_", "").replace(".codes", "")
+        for f in glob.glob(
+            self.OUTDATA_DIR + self.EXP_ID + "_" + self.NAME + "*.codes"
+        ):
+            file_stream = (
+                f.replace(self.OUTDATA_DIR, "")
+                .replace(self.EXP_ID + "_" + self.NAME + "_", "")
+                .replace(".codes", "")
+            )
             # BUG: This depends on knowing that the file extension is GRIB. This might not always be the case...
-            file_pattern = self.OUTDATA_DIR+self.EXP_ID+"_"+self.NAME+"_"+file_stream+"*grb"
+            file_pattern = (
+                self.OUTDATA_DIR
+                + self.EXP_ID
+                + "_"
+                + self.NAME
+                + "_"
+                + file_stream
+                + "*grb"
+            )
             variables[file_pattern] = {}
             with open(f) as code_file:
                 code_file_list = [" ".join(line.split()) for line in code_file]
                 for entry in code_file_list:
-                    code_number, levels, short_name, _, _, long_name = entry.split(" ", 5)
+                    code_number, levels, short_name, _, _, long_name = entry.split(
+                        " ", 5
+                    )
                     variables[file_pattern][short_name] = {
-                        'code_number': code_number,
-                        'levels': levels,
-                        'short_name': short_name,
-                        'long_name': long_name,
-                        }
+                        "code_number": code_number,
+                        "levels": levels,
+                        "short_name": short_name,
+                        "long_name": long_name,
+                    }
         return variables
 
     def get_files_for_variable_short_name(self, varname):
+        """
+        Checks all known component and gets a list of files that should be used
+        for a specific variable name.
+
+        There is currently an implicit assumption for the following to be true:
+        1. Each ``component`` has a private attribute ``_variables``
+        1. This attribute should be a dictionary
+        1. The dictionary needs to have a "file_pattern" as a key, and all
+           short names contained in this file pattern as values.
+
+        Parameters
+        ----------
+        varname : str
+            The short variable name which is being looked for
+
+        Returns
+        -------
+        file_pattern_list, component : tuple
+            A tuple of:
+            1. A list for all files currently available with the varname. Note
+               that sorting currently does not have a specific mechanism, so it
+               **probably** sorts alphabetically/numerically.
+            2. The component object for analysis with these files.
+        """
         for component in self._analysis_components:
-            for file_pattern, short_names_in_file_pattern in component._variables.items():
+            for (
+                file_pattern,
+                short_names_in_file_pattern,
+            ) in component._variables.items():
                 for short_name in short_names_in_file_pattern:
                     logging.debug("Checking: %s = %s" % (short_name, varname))
                     if short_name == varname:
-                        return sorted(glob.glob(file_pattern)), component
+                        return (sorted(glob.glob(file_pattern)), component)
 
     # Some common operations. If a specific model needs to do this in a
     # different way, you can overload the methods (e.g. FESOM needs to do
@@ -138,4 +210,14 @@ class EsmAnalysis(object):
     def fldmean(self, varname):
         needed_files, component = self.get_files_for_variable_short_name(varname)
         comp_name, output_dir = component.NAME, component.ANALYSIS_DIR
-        self.CDO.fldmean.select('name='+varname, input=needed_files, output=output_dir+self.EXP_ID+"_"+comp_name+"_"+varname+"_fldmean".nc)
+        self.CDO.fldmean.select(
+            "name=" + varname,
+            input=needed_files,
+            output=output_dir
+            + self.EXP_ID
+            + "_"
+            + comp_name
+            + "_"
+            + varname
+            + "_fldmean".nc,
+        )

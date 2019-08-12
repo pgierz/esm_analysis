@@ -4,7 +4,14 @@ import glob
 
 from ..esm_analysis import EsmAnalysis
 
+
 class EchamAnalysis(EsmAnalysis):
+    """
+    Analysis of ECHAM6 simulations
+
+    Most of the methods default to the ones pre-defined in the base class, ``EsmAnalysis``.
+
+    """
 
     NAME = "echam6"
     DOMAIN = "atmosphere"
@@ -20,4 +27,3 @@ class EchamAnalysis(EsmAnalysis):
         self.RESTART_DIR += "echam/"
 
         self._variables = self.determine_variable_dict_from_code_files()
-
