@@ -85,10 +85,6 @@ class EsmAnalysis(object):
         self.CDO = cdo.Cdo()
 
         self._analysis_components = []
-        # Putting this here leads to a recursion???
-        # Duh, of course it does -- you call the super init from the
-        # subcomponents, dumbass...
-        #
         # self.initialize_analysis_components()
 
     def create_analysis_dir(self):
@@ -208,6 +204,9 @@ class EsmAnalysis(object):
     # different way, you can overload the methods (e.g. FESOM needs to do
     # weighting of the triangles to get correct fldmean)
     def fldmean(self, varname):
+        """
+        Generates a field mean over the entire model domain for a the specified varname.
+        """
         needed_files, component = self.get_files_for_variable_short_name(varname)
         comp_name, output_dir = component.NAME, component.ANALYSIS_DIR
         self.CDO.fldmean.select(
