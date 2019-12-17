@@ -76,6 +76,17 @@ class EsmAnalysis(object):
                 if ".top_of_exp_tree" in files:
                     self.EXP_BASE = bottom
                     break
+            else:
+                self.EXP_BASE = input("Enter the top-level directory of your experiment: ")
+                basedir = os.path.dirname(self.EXP_BASE)
+                if not os.path.exists(basedir):
+                    print("Generating directories for %s" % basedir)
+                    input("Press Enter to continue, Ctrl-C to canel...")
+                    os.makedirs(basedir)
+                print("Making marker file .top_of_exp_tree in %s" % basedir)
+                input("Press Enter to continue, Ctrl-C to canel...")
+                with open(self.EXP_BASE+"/.top_of_exp_tree", "w") as f:
+                    os.utime(f, None)
         else:
             self.EXP_BASE = exp_base
 
