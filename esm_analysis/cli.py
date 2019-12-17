@@ -4,8 +4,9 @@
 import sys
 import click
 
+from esm_analysis import EsmAnalysis
 
-@click.command()
+@click.group()
 def main(args=None):
     """Console script for esm_analysis."""
     click.echo(
@@ -13,6 +14,29 @@ def main(args=None):
     )
     click.echo("See click documentation at http://click.pocoo.org/")
     return 0
+
+@main.command()
+@click.argument('varname')
+def fldmean(varname):
+    """Fldmean generator
+
+    Parameters
+    ----------
+    varname : str
+        The variable name to make a fldmean for. This will automatically figure
+        out which model ``varname`` belongs to.
+
+    Examples
+    --------
+
+    ..code:
+        $ esm_analysis fldmean temp2
+    """
+    click.echo("This will generate a fldmean for: %s" % varname)
+    analyzer = EsmAnalysis()
+    analyzer.create_analysis_dir()
+    analyzer.initialize_analysis_components()
+    analyzer.fldmean(varname)
 
 
 if __name__ == "__main__":

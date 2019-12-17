@@ -84,6 +84,10 @@ class EsmAnalysis(object):
         # Here's yer CDO:
         self.CDO = cdo.Cdo()
 
+        # Ensure that the analysis directory exists for the top:
+        self.create_analysis_dir()
+
+        # Make a list to hold the analysis components
         self._analysis_components = []
         # Putting this here leads to a recursion???
         # Duh, of course it does -- you call the super init from the
@@ -106,16 +110,21 @@ class EsmAnalysis(object):
         """
         for component in os.listdir(self.OUTDATA_DIR):
             try:
-                # XXX: I don't really like this, it'd be nicer with relative
+                # TODO: I don't really like this, it'd be nicer with relative
                 # imports (maybe? I am not sure...)
                 comp_module = importlib.import_module(
                     "esm_analysis.components." + component
                 )
-                self._analysis_components.append(
-                    getattr(comp_module, component.capitalize() + "Analysis")()
-                )
+                comp_analyzer = getattr(comp_module, component.capitalize() + "Analysis")()
+                comp_analyzer.create_analysis_dir()
+
+                # Make it a object attribute for access interactively:
+                setattr(self, comp_analyzer.NAME, comp_analyzer)
+
+                # Put it in the list for easy access from inside the class:
+                self._analysis_components.append(comp_analyzer)
             except:
-                logging.warning("Oops: no analysis class available for: %s" % component)
+                logging.warning("Oops: Trouble initializing or no analysis class available for: %s" % component)
 
     def determine_variable_dict_from_code_files(self):
         """
@@ -208,16 +217,5 @@ class EsmAnalysis(object):
     # different way, you can overload the methods (e.g. FESOM needs to do
     # weighting of the triangles to get correct fldmean)
     def fldmean(self, varname):
-        needed_files, component = self.get_files_for_variable_short_name(varname)
-        comp_name, output_dir = component.NAME, component.ANALYSIS_DIR
-        self.CDO.fldmean.select(
-            "name=" + varname,
-            input=needed_files,
-            output=output_dir
-            + self.EXP_ID
-            + "_"
-            + comp_name
-            + "_"
-            + varname
-            + "_fldmean".nc,
-        )
+        file_list, component = self.get_files_for_variable_short_name(varname)
+        component.fldmean(varname, file_list)
