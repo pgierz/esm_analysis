@@ -8,6 +8,7 @@ import click
 
 from esm_analysis import EsmAnalysis
 
+
 @click.group()
 @click.option("--verbose", default=False, is_flag=True)
 def main(args=None, verbose=False):
@@ -16,8 +17,9 @@ def main(args=None, verbose=False):
         logging.basicConfig(level=logging.INFO)
     return 0
 
+
 @main.command()
-@click.argument('varname')
+@click.argument("varname")
 @click.option("--preferred_analysis_dir", default=None)
 def fldmean(varname, preferred_analysis_dir=None):
     """Fldmean generator
@@ -38,7 +40,9 @@ def fldmean(varname, preferred_analysis_dir=None):
     click.echo("This will generate a fldmean for: %s" % varname)
     click.echo("You passed in preferred_analysis_dir: %s" % preferred_analysis_dir)
     analyzer = EsmAnalysis(preferred_analysis_dir=preferred_analysis_dir)
-    analyzer.initialize_analysis_components(preferred_analysis_dir=preferred_analysis_dir)
+    analyzer.initialize_analysis_components(
+        preferred_analysis_dir=preferred_analysis_dir
+    )
     analyzer.fldmean(varname)
 
 

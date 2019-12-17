@@ -7,6 +7,11 @@ import os
 
 from ..esm_analysis import EsmAnalysis
 
+# FIXME: move this somewhere else:
+def chunks(lst, n):
+    """Yield successive n-sized chunks from lst."""
+    for i in range(0, len(lst), n):
+        yield lst[i:i + n]
 
 class EchamAnalysis(EsmAnalysis):
     """
@@ -20,12 +25,7 @@ class EchamAnalysis(EsmAnalysis):
     DOMAIN = "atmosphere"
 
     def __init__(self, *args, **kwargs):
-        logging.info(80*"-")
-        logging.info("Building ECHAM!")
-        import pdb; pdb.set_trace()
         super().__init__(*args, **kwargs)
-
-        logging.info("Before modification: %s", self.ANALYSIS_DIR)
 
         self.ANALYSIS_DIR += "echam/"
         self.CONFIG_DIR += "echam/"
@@ -55,9 +55,22 @@ class EchamAnalysis(EsmAnalysis):
             + varname
             + "_fldmean.nc"
         ):
-            tmp = self.CDO.select(
-                "name=" + varname, options="-f nc -t echam6", input=file_list
-            )
+            if len(file_list) > 1000:
+                print("Processing chunks...")
+                tmp_list = []
+                for files in chunks(file_list, 1000):
+                    print("These files are next:")
+                    for f in files:
+                        print(f)
+                    tmp_chunk = self.CDO.select(
+                            "name="+varname, options="-f nc -t echam6", input=files
+                            )
+                    tmp_list.append(tmp_chunk)
+                tmp = self.CDO.cat(input=" ".join(tmp_list))
+            else:
+                tmp = self.CDO.select(
+                    "name=" + varname, options="-f nc -t echam6", input=file_list
+                )
             logging.info("Finished with generation of 'tmp' file for fldmean")
             self.CDO.fldmean(
                 input=tmp,
@@ -94,9 +107,22 @@ class EchamAnalysis(EsmAnalysis):
             + varname
             + "_yearmean.nc"
         ):
-            tmp = self.CDO.select(
-                "name=" + varname, options="-f nc -t echam6", input=file_list
-            )
+            if len(file_list) > 1000:
+                print("Processing chunks...")
+                tmp_list = []
+                for files in chunks(file_list, 1000):
+                    print("These files are next:")
+                    for f in files:
+                        print(f)
+                    tmp_chunk = self.CDO.select(
+                            "name="+varname, options="-f nc -t echam6", input=files
+                            )
+                    tmp_list.append(tmp_chunk)
+                tmp = self.CDO.cat(input=" ".join(tmp_list))
+            else:
+                tmp = self.CDO.select(
+                    "name=" + varname, options="-f nc -t echam6", input=file_list
+                )
             logging.info("Finished with generation of 'tmp' file for yearmean")
             self.CDO.yearmean(
                 input=tmp,

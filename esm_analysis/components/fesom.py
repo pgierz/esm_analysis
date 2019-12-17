@@ -34,11 +34,14 @@ class FesomAnalysis(EsmAnalysis):
 
         self._variables = self.determine_variable_dict_from_outdata_contents()
 
-        runscript_file = [f for f in os.listdir(self.SCRIPT_DIR) if f.endswith('run')][0]
+        runscript_file = [f for f in os.listdir(self.SCRIPT_DIR) if f.endswith("run")][
+            0
+        ]
         with open(runscript_file) as runscript:
-            mesh_dir = [l.strip() for l in runscript.readlines() if "MESH_DIR" in l][0].split("=")[-1]
+            mesh_dir = [l.strip() for l in runscript.readlines() if "MESH_DIR" in l][
+                0
+            ].split("=")[-1]
         self.MESH = pf.load_mesh(mesh_dir, usepickle=False)
-
 
     def determine_variable_dict_from_outdata_contents(self):
         all_outdata_variables = {

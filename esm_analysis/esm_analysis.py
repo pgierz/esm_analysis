@@ -51,7 +51,7 @@ def walk_up(bottom):
 
 
 class EsmAnalysis(object):
-    def __init__(self, preferred_analysis_dir=None):
+    def __init__(self, exp_base=None, preferred_analysis_dir=None):
         """ Base Class for Analysis, other component specific analysis classes should inherit from this one
 
         Sets up the following directories and attributes from anywhere within the experiment tree:
@@ -71,11 +71,13 @@ class EsmAnalysis(object):
         """
         # Figure out what the top of the experiment is by finding upwards a
         # file called .top_of_exp_tree
-        print(locals())
-        for bottom, dirs, files in walk_up(os.getcwd()):
-            if ".top_of_exp_tree" in files:
-                self.EXP_BASE = bottom
-                break
+        if not exp_base:
+            for bottom, dirs, files in walk_up(os.getcwd()):
+                if ".top_of_exp_tree" in files:
+                    self.EXP_BASE = bottom
+                    break
+        else:
+            self.EXP_BASE = exp_base
 
         self.EXP_ID = os.path.basename(self.EXP_BASE)
 
@@ -132,18 +134,22 @@ class EsmAnalysis(object):
             try:
                 # TODO: I don't really like this, it'd be nicer with relative
                 # imports (maybe? I am not sure...)
-                logging.debug("Trying to import esm_analysis.components."+component)
+                logging.debug("Trying to import esm_analysis.components." + component)
                 comp_module = importlib.import_module(
                     "esm_analysis.components." + component
                 )
                 logging.debug("Import worked!")
-                comp_analyzer = getattr(comp_module, component.capitalize() + "Analysis")(preferred_analysis_dir=preferred_analysis_dir)
+                comp_analyzer = getattr(
+                    comp_module, component.capitalize() + "Analysis"
+                )(exp_base=self.EXP_BASE, preferred_analysis_dir=preferred_analysis_dir)
                 logging.debug("Init worked!")
                 # PG: Not sure I like the next two lines, they already confuse
                 # me 10 minutes after I wrote them...
                 if preferred_analysis_dir:
                     component_analysis_dir = preferred_analysis_dir + "/" + component
-                    comp_analyzer.create_analysis_dir(preferred_analysis_dir=component_analysis_dir)
+                    comp_analyzer.create_analysis_dir(
+                        preferred_analysis_dir=component_analysis_dir
+                    )
                 else:
                     comp_analyzer.create_analysis_dir()
 
@@ -155,7 +161,10 @@ class EsmAnalysis(object):
                 # Put it in the list for easy access from inside the class:
                 self._analysis_components.append(comp_analyzer)
             except:
-                logging.warning("Oops: Trouble initializing or no analysis class available for: %s" % component)
+                logging.warning(
+                    "Oops: Trouble initializing or no analysis class available for: %s"
+                    % component
+                )
 
     def determine_variable_dict_from_code_files(self):
         """
