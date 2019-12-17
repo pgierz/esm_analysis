@@ -51,7 +51,7 @@ def walk_up(bottom):
 
 
 class EsmAnalysis(object):
-    def __init__(self):
+    def __init__(self, preferred_analysis_dir=None):
         """ Base Class for Analysis, other component specific analysis classes should inherit from this one
 
         Sets up the following directories and attributes from anywhere within the experiment tree:
@@ -63,9 +63,15 @@ class EsmAnalysis(object):
         + ``OUTDATA_DIR``
         + ``RESTART_DIR``
         + ``SCRIPT_DIR``
+
+        Parameters
+        ----------
+        preferred_analysis_dir : str
+            Where the analysis files should be stored, defaults to the current experiment.
         """
         # Figure out what the top of the experiment is by finding upwards a
         # file called .top_of_exp_tree
+        print(locals())
         for bottom, dirs, files in walk_up(os.getcwd()):
             if ".top_of_exp_tree" in files:
                 self.EXP_BASE = bottom
@@ -85,22 +91,36 @@ class EsmAnalysis(object):
         self.CDO = cdo.Cdo()
 
         # Ensure that the analysis directory exists for the top:
-        self.create_analysis_dir()
+
+        logging.info("Before call: %s", self.ANALYSIS_DIR)
+        self.create_analysis_dir(preferred_analysis_dir=preferred_analysis_dir)
+        logging.info("After call: %s", self.ANALYSIS_DIR)
 
         # Make a list to hold the analysis components
         self._analysis_components = []
-        # Putting this here leads to a recursion???
-        # Duh, of course it does -- you call the super init from the
-        # subcomponents, dumbass...
-        #
-        # self.initialize_analysis_components()
 
-    def create_analysis_dir(self):
-        """ Create the analysis directory and any intermediate directories if needed """
+    def create_analysis_dir(self, preferred_analysis_dir=None):
+        """
+        Create the analysis directory and any intermediate directories if needed.
+
+        Parameters
+        ----------
+        preferred_analysis_dir : str
+            The location where analysis should be stored
+
+        Notes
+        -----
+        If you give an argument to ``preferred_analysis_dir``, the attribute ``self.ANALYSIS_DIR`` is changed to this.
+        """
+        if preferred_analysis_dir is not None:
+            logging.info("Modifying self.ANALYSIS_DIR:")
+            self.ANALYSIS_DIR = preferred_analysis_dir
+            logging.info(self.ANALYSIS_DIR)
         if not os.path.isdir(self.ANALYSIS_DIR):
+            logging.info("Creating directory: %s", self.ANALYSIS_DIR)
             os.makedirs(self.ANALYSIS_DIR)
 
-    def initialize_analysis_components(self):
+    def initialize_analysis_components(self, preferred_analysis_dir=None):
         """
         Creates analysis objects for each component found in the ``OUTDATA_DIR`` directory.
 
@@ -112,14 +132,25 @@ class EsmAnalysis(object):
             try:
                 # TODO: I don't really like this, it'd be nicer with relative
                 # imports (maybe? I am not sure...)
+                logging.debug("Trying to import esm_analysis.components."+component)
                 comp_module = importlib.import_module(
                     "esm_analysis.components." + component
                 )
-                comp_analyzer = getattr(comp_module, component.capitalize() + "Analysis")()
-                comp_analyzer.create_analysis_dir()
+                logging.debug("Import worked!")
+                comp_analyzer = getattr(comp_module, component.capitalize() + "Analysis")(preferred_analysis_dir=preferred_analysis_dir)
+                logging.debug("Init worked!")
+                # PG: Not sure I like the next two lines, they already confuse
+                # me 10 minutes after I wrote them...
+                if preferred_analysis_dir:
+                    component_analysis_dir = preferred_analysis_dir + "/" + component
+                    comp_analyzer.create_analysis_dir(preferred_analysis_dir=component_analysis_dir)
+                else:
+                    comp_analyzer.create_analysis_dir()
 
+                logging.debug("Finished setting up analysis dir for " + component)
                 # Make it a object attribute for access interactively:
                 setattr(self, comp_analyzer.NAME, comp_analyzer)
+                logging.debug("Setting attributes for the big analyser")
 
                 # Put it in the list for easy access from inside the class:
                 self._analysis_components.append(comp_analyzer)
@@ -217,5 +248,11 @@ class EsmAnalysis(object):
     # different way, you can overload the methods (e.g. FESOM needs to do
     # weighting of the triangles to get correct fldmean)
     def fldmean(self, varname):
+        """
+        Generates a field mean over the entire model domain for a the specified varname.
+        """
         file_list, component = self.get_files_for_variable_short_name(varname)
+        logging.info("All files for %s:", component)
+        for f in file_list:
+            logging.info("- %s", f)
         component.fldmean(varname, file_list)

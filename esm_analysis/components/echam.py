@@ -19,8 +19,13 @@ class EchamAnalysis(EsmAnalysis):
     NAME = "echam6"
     DOMAIN = "atmosphere"
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        logging.info(80*"-")
+        logging.info("Building ECHAM!")
+        import pdb; pdb.set_trace()
+        super().__init__(*args, **kwargs)
+
+        logging.info("Before modification: %s", self.ANALYSIS_DIR)
 
         self.ANALYSIS_DIR += "echam/"
         self.CONFIG_DIR += "echam/"
