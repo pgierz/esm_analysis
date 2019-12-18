@@ -103,11 +103,17 @@ class EsmAnalysis(object):
                 if not os.path.exists(basedir):
                     print("Generating directories for %s" % basedir)
                     input("Press Enter to continue, Ctrl-C to canel...")
-                    os.makedirs(basedir)
+                    try:
+                        os.makedirs(basedir)
+                    except PermissionError:
+                        print("Sorry, you don't have permission to write here!")
                 print("Making marker file .top_of_exp_tree in %s" % basedir)
                 input("Press Enter to continue, Ctrl-C to canel...")
-                with open(self.EXP_BASE + "/.top_of_exp_tree", "w") as f:
-                    os.utime(f, None)
+                try:
+                    with open(self.EXP_BASE + "/.top_of_exp_tree", "w") as f:
+                        os.utime(f, None)
+                except PermissionError:
+                    print("Sorry, you don't have permission to write here!")
         else:
             self.EXP_BASE = exp_base
 
