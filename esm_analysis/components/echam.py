@@ -11,7 +11,8 @@ from ..esm_analysis import EsmAnalysis
 def chunks(lst, n):
     """Yield successive n-sized chunks from lst."""
     for i in range(0, len(lst), n):
-        yield lst[i:i + n]
+        yield lst[i : i + n]
+
 
 class EchamAnalysis(EsmAnalysis):
     """
@@ -63,8 +64,8 @@ class EchamAnalysis(EsmAnalysis):
                     for f in files:
                         print(f)
                     tmp_chunk = self.CDO.select(
-                            "name="+varname, options="-f nc -t echam6", input=files
-                            )
+                        "name=" + varname, options="-f nc -t echam6", input=files
+                    )
                     tmp_list.append(tmp_chunk)
                 tmp = self.CDO.cat(input=" ".join(tmp_list))
             else:
@@ -115,8 +116,8 @@ class EchamAnalysis(EsmAnalysis):
                     for f in files:
                         print(f)
                     tmp_chunk = self.CDO.select(
-                            "name="+varname, options="-f nc -t echam6", input=files
-                            )
+                        "name=" + varname, options="-f nc -t echam6", input=files
+                    )
                     tmp_list.append(tmp_chunk)
                 tmp = self.CDO.cat(input=" ".join(tmp_list))
             else:

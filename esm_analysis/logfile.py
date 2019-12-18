@@ -102,7 +102,6 @@ class Logfile(object):
                 "Run Efficiency (Last 10 Runs)": efficiency * 100,
             },
             orient="index",
-            #columns=["Run Statistics"],
+            # columns=["Run Statistics"],
         )
         return df
-

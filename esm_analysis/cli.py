@@ -10,6 +10,7 @@ import tabulate
 
 from esm_analysis import EsmAnalysis
 
+
 @click.group()
 @click.option("--verbose", default=False, is_flag=True)
 def main(args=None, verbose=False):
@@ -52,9 +53,7 @@ def fldmean(varname, preferred_analysis_dir=None):
 def logfile_stats(fname):
     log = Logfile.from_file(fname)
     run_stats = log.run_stats()
-    print(tabulate.tabulate(run_stats, headers='keys', tablefmt='psql'))
-
-
+    print(tabulate.tabulate(run_stats, headers="keys", tablefmt="psql"))
 
 
 if __name__ == "__main__":

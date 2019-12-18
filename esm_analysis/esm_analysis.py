@@ -52,9 +52,12 @@ def walk_up(bottom):
 
 class EsmAnalysis(object):
     def __init__(self, exp_base=None, preferred_analysis_dir=None):
-        """ Base Class for Analysis, other component specific analysis classes should inherit from this one
+        """
+        Base Class for Analysis, other component specific analysis classes
+        should inherit from this one
 
-        Sets up the following directories and attributes from anywhere within the experiment tree:
+        Sets up the following directories and attributes from anywhere within
+        the experiment tree:
         + ``EXP_ID``
         + ``ANALYSIS_DIR``
         + ``CONFIG_DIR``
@@ -77,7 +80,9 @@ class EsmAnalysis(object):
                     self.EXP_BASE = bottom
                     break
             else:
-                self.EXP_BASE = input("Enter the top-level directory of your experiment: ")
+                self.EXP_BASE = input(
+                    "Enter the top-level directory of your experiment: "
+                )
                 basedir = os.path.dirname(self.EXP_BASE)
                 if not os.path.exists(basedir):
                     print("Generating directories for %s" % basedir)
@@ -85,7 +90,7 @@ class EsmAnalysis(object):
                     os.makedirs(basedir)
                 print("Making marker file .top_of_exp_tree in %s" % basedir)
                 input("Press Enter to continue, Ctrl-C to canel...")
-                with open(self.EXP_BASE+"/.top_of_exp_tree", "w") as f:
+                with open(self.EXP_BASE + "/.top_of_exp_tree", "w") as f:
                     os.utime(f, None)
         else:
             self.EXP_BASE = exp_base
@@ -123,7 +128,8 @@ class EsmAnalysis(object):
 
         Notes
         -----
-        If you give an argument to ``preferred_analysis_dir``, the attribute ``self.ANALYSIS_DIR`` is changed to this.
+        If you give an argument to ``preferred_analysis_dir``, the attribute
+        ``self.ANALYSIS_DIR`` is changed to this.
         """
         if preferred_analysis_dir is not None:
             logging.info("Modifying self.ANALYSIS_DIR:")
@@ -263,11 +269,13 @@ class EsmAnalysis(object):
                 for short_name in short_names_in_file_pattern:
                     logging.debug("Checking: %s = %s" % (short_name, varname))
                     if short_name == varname:
-                        fpattern_list.append((sorted(glob.glob(file_pattern)), component))
+                        fpattern_list.append(
+                            (sorted(glob.glob(file_pattern)), component)
+                        )
         if len(fpattern_list) > 1:
             print("Multiple file patterns have requested variable %s" % varname)
             for index, fpattern, component in enumerate(fpattern_list):
-                print("[%s] %s: %s" % (index+1, component, fpattern))
+                print("[%s] %s: %s" % (index + 1, component, fpattern))
             index_choice = int(input("Please choose a filepattern: ") - 1)
             return fpattern_list[index_choice]
         return fpattern_list[0]
