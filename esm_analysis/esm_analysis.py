@@ -254,6 +254,7 @@ class EsmAnalysis(object):
                **probably** sorts alphabetically/numerically.
             2. The component object for analysis with these files.
         """
+        fpattern_list = []
         for component in self._analysis_components:
             for (
                 file_pattern,
@@ -262,7 +263,14 @@ class EsmAnalysis(object):
                 for short_name in short_names_in_file_pattern:
                     logging.debug("Checking: %s = %s" % (short_name, varname))
                     if short_name == varname:
-                        return (sorted(glob.glob(file_pattern)), component)
+                        fpattern_list.append((sorted(glob.glob(file_pattern)), component))
+        if len(fpattern_list) > 1:
+            print("Multiple file patterns have requested variable %s" % varname)
+            for index, fpattern, component in enumerate(fpattern_list):
+                print("[%s] %s: %s" % (index+1, component, fpattern))
+            index_choice = int(input("Please choose a filepattern: ") - 1)
+            return fpattern_list[index_choice]
+        return fpattern_list[0]
 
     # Some common operations. If a specific model needs to do this in a
     # different way, you can overload the methods (e.g. FESOM needs to do
