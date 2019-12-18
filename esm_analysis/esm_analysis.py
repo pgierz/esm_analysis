@@ -50,6 +50,22 @@ def walk_up(bottom):
         yield x
 
 
+################################################################################
+# NOTES:
+#
+#   This needs to be refactored correctly. Actually, we need two big classes,
+#   not just one.
+#
+#   The first needs to be for components, the second for the entire experiment.
+#   Otherwise you inherit methods into the components that actually don't work,
+#   since they rely on attributes for the entire setup.
+################################################################################
+
+
+class AnalysisComponent(object):
+    pass
+
+
 class EsmAnalysis(object):
     def __init__(self, exp_base=None, preferred_analysis_dir=None):
         """
@@ -234,6 +250,21 @@ class EsmAnalysis(object):
                         "long_name": long_name,
                     }
         return variables
+
+    def _get_files_for_variable_short_name_single_component(self, varname):
+        fpattern_list = []
+        for (file_pattern, short_names_in_file_pattern) in self._variables.items():
+            for short_name in short_names_in_file_pattern:
+                logging.debug("Checking: %s = %s" % (short_name, varname))
+                if short_name == varname:
+                    fpattern_list.append(sorted(glob.glob(file_pattern)))
+        if len(fpattern_list) > 1:
+            print("Multiple file patterns have requested variable %s" % varname)
+            for index, fpattern, component in enumerate(fpattern_list):
+                print("[%s] %s: %s" % (index + 1, component, fpattern))
+            index_choice = int(input("Please choose a filepattern: ") - 1)
+            return fpattern_list[index_choice]
+        return fpattern_list[0]
 
     def get_files_for_variable_short_name(self, varname):
         """

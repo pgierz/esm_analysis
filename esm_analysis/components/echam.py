@@ -39,9 +39,40 @@ class EchamAnalysis(EsmAnalysis):
 
     ################################################################################
     # Special Analyses
-    def newest_yearly_climatology(self, varname, number_of_years=30):
-        # TODO
-        pass
+    def newest_climatology(self, varname, number_of_years=30):
+        """
+        Generates a climatological average (time mean) for a specific variable
+        name, default length of 30 years.
+
+        Parameters
+        ----------
+        varname : str
+            The variable name to use
+        number_of_years : int
+            The number of years to use to generate the climatology
+
+        Warning
+        -------
+        Currently, it is assumed that ECHAM6 outputs 1 file for each month, so
+        the newest ``number_of_years*12`` files are named. Newest is determined
+        based upon alphabetical sorting, since the modification timestamps
+        might be messed up due to something like ``touch``
+        """
+        flist = self._get_files_for_variable_short_name_single_component(varname)
+        required_files = flist[-number_of_years * 12 :]
+        return self.CDO.timmean(
+            options="-f nc -t echam6",
+            input="-select,name=" + varname + " " + " ".join(required_files),
+            output=self.ANALYSIS_DIR
+            + "/"
+            + self.EXP_ID
+            + "_"
+            + self.NAME
+            + "_"
+            + varname
+            + "_climmean.nc",
+            returnXDataset=True,
+        )
 
     ################################################################################
     # Spatial Averages:
