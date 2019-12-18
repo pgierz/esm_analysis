@@ -5,9 +5,10 @@ import logging
 import sys
 
 import click
+from esm_analysis.logfile import Logfile
+import tabulate
 
 from esm_analysis import EsmAnalysis
-
 
 @click.group()
 @click.option("--verbose", default=False, is_flag=True)
@@ -44,6 +45,16 @@ def fldmean(varname, preferred_analysis_dir=None):
         preferred_analysis_dir=preferred_analysis_dir
     )
     analyzer.fldmean(varname)
+
+
+@main.command()
+@click.argument("fname", type=click.Path(exists=True))
+def logfile_stats(fname):
+    log = Logfile.from_file(fname)
+    run_stats = log.run_stats()
+    print(tabulate.tabulate(run_stats, headers='keys', tablefmt='psql'))
+
+
 
 
 if __name__ == "__main__":
