@@ -49,6 +49,20 @@ def fldmean(varname, preferred_analysis_dir=None):
 
 
 @main.command()
+@click.argument("varname")
+@click.option("--preferred_analysis_dir", default=None)
+def newest_climatology(varname, preferred_analysis_dir):
+    """
+    Newest climatology
+    """
+    click.echo("This will generate the newest climatology for: %s" % varname)
+    analyzer = EsmAnalysis(preferred_analysis_dir=preferred_analysis_dir)
+    analyzer.initialize_analysis_components(
+        preferred_analysis_dir=preferred_analysis_dir
+    )
+    analyzer.newest_climatology(varname)
+
+@main.command()
 @click.argument("fname", type=click.Path(exists=True))
 def logfile_stats(fname):
     log = Logfile.from_file(fname)

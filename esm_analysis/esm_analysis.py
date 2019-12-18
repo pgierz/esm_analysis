@@ -323,3 +323,7 @@ class EsmAnalysis(object):
         for f in file_list:
             logging.info("- %s", f)
         component.fldmean(varname, file_list)
+
+    def newest_climatology(self, varname):
+        file_list, component = self.get_files_for_variable_short_name(varname)
+        return component.newest_climatology(varname)
