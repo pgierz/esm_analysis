@@ -12,10 +12,13 @@ from esm_analysis import EsmAnalysis
 
 
 @click.group()
+@click.option("--debug", default=False, is_flag=True)
 @click.option("--verbose", default=False, is_flag=True)
-def main(args=None, verbose=False):
+def main(args=None, verbose=False, debug=False):
     """Console script for esm_analysis."""
-    if verbose:
+    if debug:
+        logging.basicConfig(level=logging.DEBUG)
+    elif verbose:
         logging.basicConfig(level=logging.INFO)
     return 0
 

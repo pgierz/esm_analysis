@@ -298,6 +298,7 @@ class EsmAnalysis(object):
             2. The component object for analysis with these files.
         """
         fpattern_list = []
+        logging.debug(self._analysis_components)
         for component in self._analysis_components:
             for (
                 file_pattern,
