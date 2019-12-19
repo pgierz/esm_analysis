@@ -17,6 +17,9 @@ setup_requirements = []
 
 test_requirements = []
 
+# Unpublished packages not on PyPI (e.g pyfesom)
+dependency_links=['https://github.com/FESOM/pyfesom/tarball/master']#, 'http://github.com/user/repo/tarball/master#egg=package-1.0']
+
 setup(
     author="Paul Gierz",
     author_email="pgierz@awi.de",
@@ -36,6 +39,7 @@ setup(
     description="Analysis Scripts for ESM Simulations",
     entry_points={"console_scripts": ["esm_analysis=esm_analysis.cli:main"]},
     install_requires=requirements,
+    dependency_links=dependency_links,
     license="GNU General Public License v3",
     long_description=readme + "\n\n" + history,
     include_package_data=True,
