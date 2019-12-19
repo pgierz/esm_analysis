@@ -1,0 +1,3 @@
+[submodule "esm_analysis/scripts"]
+	path = esm_analysis/scripts
+	url = https://gitlab.awi.de/paleodyn/model-analysis

@@ -9,6 +9,7 @@ import xarray as xr
 
 
 from ..esm_analysis import EsmAnalysis
+from ..scripts.analysis_scripts.fesom import ANALYSIS_fesom_sfc_timmean
 
 
 class FesomAnalysis(EsmAnalysis):
@@ -21,6 +22,9 @@ class FesomAnalysis(EsmAnalysis):
 
     NAME = "fesom"
     DOMAIN = "ocean"
+
+    def test_meth(self):
+        print(ANALYSIS_fesom_sfc_timmean)
 
     def __init__(self):
         super().__init__()
