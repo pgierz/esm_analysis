@@ -9,7 +9,7 @@ ESM Analysis
 .. image:: https://img.shields.io/travis/pgierz/esm_analysis.svg
         :target: https://travis-ci.org/pgierz/esm_analysis
 
-.. image:: https://readthedocs.org/projects/esm-analysis/badge/?version=latest
+.. image:: https://readthedocs.org/projects/esm-tools-analysis/badge/?version=latest
         :target: https://esm-analysis.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
 
