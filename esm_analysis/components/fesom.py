@@ -41,7 +41,7 @@ class FesomAnalysis(EsmAnalysis):
         runscript_file = [f for f in os.listdir(self.SCRIPT_DIR) if f.endswith("run")][
             0
         ]
-        with open(runscript_file) as runscript:
+        with open(self.SCRIPT_DIR+"/"+runscript_file) as runscript:
             mesh_dir = [l.strip() for l in runscript.readlines() if "MESH_DIR" in l][
                 0
             ].split("=")[-1]
