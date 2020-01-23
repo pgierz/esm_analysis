@@ -108,7 +108,7 @@ class EsmAnalysis(object):
                     except PermissionError:
                         print("Sorry, you don't have permission to write here!")
                 print("Making marker file .top_of_exp_tree in %s" % basedir)
-                input("Press Enter to continue, Ctrl-C to canel...")
+                input("Press Enter to continue, Ctrl-C to cancel...")
                 try:
                     with open(self.EXP_BASE + "/.top_of_exp_tree", "w") as f:
                         os.utime(f, None)
@@ -328,7 +328,15 @@ class EsmAnalysis(object):
         logging.info("All files for %s:", component)
         for f in file_list:
             logging.info("- %s", f)
-        component.fldmean(varname, file_list)
+        return component.fldmean(varname, file_list)
+
+    def yseasmean(self, varname):
+        """
+        Generates a yseasmean over the entire model domain for the specified varname.
+        """
+        file_list, component = self.get_files_for_variable_short_name(varname)
+        logging.info("All files for %s:", component)
+        return component.yseasmean(varname, file_list)
 
     def newest_climatology(self, varname):
         file_list, component = self.get_files_for_variable_short_name(varname)

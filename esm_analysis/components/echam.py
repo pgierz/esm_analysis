@@ -4,6 +4,7 @@ import glob
 import logging
 import os
 
+import xarray as xr
 
 from ..esm_analysis import EsmAnalysis
 
@@ -250,4 +251,55 @@ class EchamAnalysis(EsmAnalysis):
             + "_"
             + varname
             + "_timmean.nc"
+        )
+
+    def yseasmean(self, varname, file_list):
+        if not os.path.isfile(
+            self.ANALYSIS_DIR
+            + "/"
+            + self.EXP_ID
+            + "_"
+            + self.NAME
+            + "_"
+            + varname
+            + "_yseasmean.nc"
+        ):
+            if len(file_list) > 1000:
+                print("Processing chunks...")
+                tmp_list = []
+                for files in chunks(file_list, 1000):
+                    print("These files are next:")
+                    for f in files:
+                        print(f)
+                    tmp_chunk = self.CDO.select(
+                        "name=" + varname, options="-f nc -t echam6", input=files
+                    )
+                    tmp_list.append(tmp_chunk)
+                tmp = self.CDO.cat(input=" ".join(tmp_list))
+            else:
+                tmp = self.CDO.select(
+                    "name=" + varname, options="-f nc -t echam6", input=file_list
+                )
+            logging.info("Finished with generation of 'tmp' file for yseasmean")
+            return self.CDO.yseasmean(
+                input=tmp,
+                output=self.ANALYSIS_DIR
+                + "/"
+                + self.EXP_ID
+                + "_"
+                + self.NAME
+                + "_"
+                + varname
+                + "_yseasmean.nc",
+                returnXDataset=True,
+            )
+        return xr.open_dataset(
+            self.ANALYSIS_DIR
+            + "/"
+            + self.EXP_ID
+            + "_"
+            + self.NAME
+            + "_"
+            + varname
+            + "_yseasmean.nc"
         )

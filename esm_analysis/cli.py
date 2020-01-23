@@ -51,6 +51,35 @@ def fldmean(varname, preferred_analysis_dir=None):
 @main.command()
 @click.argument("varname")
 @click.option("--preferred_analysis_dir", default=None)
+def yseasmean(varname, preferred_analysis_dir=None):
+    """Fldmean generator
+
+    Parameters
+    ----------
+    varname : str
+        The variable name to make a yseasmean for. This will automatically figure
+        out which model ``varname`` belongs to.
+
+    Examples
+    --------
+
+    ..code ::
+
+        $ esm_analysis yseasmean temp2
+    """
+    click.echo("This will generate a yseasmean for: %s" % varname)
+    if preferred_analysis_dir:
+        click.echo("You passed in preferred_analysis_dir: %s" % preferred_analysis_dir)
+    analyzer = EsmAnalysis(preferred_analysis_dir=preferred_analysis_dir)
+    analyzer.initialize_analysis_components(
+        preferred_analysis_dir=preferred_analysis_dir
+    )
+    analyzer.yseasmean(varname)
+
+
+@main.command()
+@click.argument("varname")
+@click.option("--preferred_analysis_dir", default=None)
 def newest_climatology(varname, preferred_analysis_dir):
     """
     Newest climatology
@@ -61,6 +90,7 @@ def newest_climatology(varname, preferred_analysis_dir):
         preferred_analysis_dir=preferred_analysis_dir
     )
     analyzer.newest_climatology(varname)
+
 
 @main.command()
 @click.argument("fname", type=click.Path(exists=True))
