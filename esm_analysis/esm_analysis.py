@@ -6,6 +6,7 @@ import glob
 import importlib
 import logging
 import os
+import re
 
 import cdo
 
@@ -91,7 +92,7 @@ class EsmAnalysis(object):
         # Figure out what the top of the experiment is by finding upwards a
         # file called .top_of_exp_tree
         if not exp_base:
-            for bottom, dirs, files in walk_up(os.getcwd()):
+            for bottom, _, files in walk_up(os.getcwd()):
                 if ".top_of_exp_tree" in files:
                     self.EXP_BASE = bottom
                     break
@@ -131,7 +132,6 @@ class EsmAnalysis(object):
         self.CDO = cdo.Cdo()
 
         # Ensure that the analysis directory exists for the top:
-
         logging.info("Before call: %s", self.ANALYSIS_DIR)
         self.create_analysis_dir(preferred_analysis_dir=preferred_analysis_dir)
         logging.info("After call: %s", self.ANALYSIS_DIR)
@@ -224,9 +224,32 @@ class EsmAnalysis(object):
         dictionary of code_number, levels, short_name, long_name.
         """
         variables = {}
-        for f in glob.glob(
+        # CLEANUP: This is a lot of duplicate code...
+        all_code_files = glob.glob(
             self.OUTDATA_DIR + self.EXP_ID + "_" + self.NAME + "*.codes"
-        ):
+        )
+        # Remove the file path:
+        code_files = [
+            code_file.replace(self.OUTDATA_DIR, "") for code_file in all_code_files
+        ]
+        code_streams = [
+            code_file.replace(self.EXP_ID, "").replace(".codes", "")
+            for code_file in code_files
+        ]
+        code_streams_no_digits = {
+            "".join(r"\d" if c.isdigit() else c for c in code_file)
+            for code_file in code_streams
+        }
+        code_streams_full = {
+            self.OUTDATA_DIR + self.EXP_ID + stream + ".codes"
+            for stream in code_streams_no_digits
+        }
+        code_regexes = {re.compile(stream) for stream in code_streams_full}
+        deduped_streams = [
+            list(filter(r.match, all_code_files))[0] for r in code_regexes
+        ]
+
+        for f in deduped_streams:
             file_stream = (
                 f.replace(self.OUTDATA_DIR, "")
                 .replace(self.EXP_ID + "_" + self.NAME + "_", "")
@@ -261,7 +284,7 @@ class EsmAnalysis(object):
         fpattern_list = []
         for (file_pattern, short_names_in_file_pattern) in self._variables.items():
             for short_name in short_names_in_file_pattern:
-                logging.debug("Checking: %s = %s" % (short_name, varname))
+                logging.debug("Checking: %s = %s", short_name, varname)
                 if short_name == varname:
                     fpattern_list.append(sorted(glob.glob(file_pattern)))
         if len(fpattern_list) > 1:
@@ -305,7 +328,7 @@ class EsmAnalysis(object):
                 short_names_in_file_pattern,
             ) in component._variables.items():
                 for short_name in short_names_in_file_pattern:
-                    logging.debug("Checking: %s = %s" % (short_name, varname))
+                    logging.debug("Checking: %s = %s", short_name, varname)
                     if short_name == varname:
                         fpattern_list.append(
                             (sorted(glob.glob(file_pattern)), component)
