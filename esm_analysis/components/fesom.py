@@ -1,3 +1,11 @@
+# @Author: Paul Gierz <pgierz>
+# @Date:   2020-01-23T13:06:50+01:00
+# @Email:  pgierz@awi.de
+# @Filename: fesom.py
+# @Last modified by:   pgierz
+# @Last modified time: 2020-01-31T19:07:04+01:00
+
+
 """ Analysis Class for FESOM """
 
 import glob
@@ -41,7 +49,7 @@ class FesomAnalysis(EsmAnalysis):
         runscript_file = [f for f in os.listdir(self.SCRIPT_DIR) if f.endswith("run")][
             0
         ]
-        with open(self.SCRIPT_DIR+"/"+runscript_file) as runscript:
+        with open(self.SCRIPT_DIR + "/" + runscript_file) as runscript:
             mesh_dir = [l.strip() for l in runscript.readlines() if "MESH_DIR" in l][
                 0
             ].split("=")[-1]
@@ -68,3 +76,7 @@ class FesomAnalysis(EsmAnalysis):
             variables[file_pattern] = {}
             variables[file_pattern][file_stream] = {"short_name": file_stream}
         return variables
+
+    def newest_climatology(self, varname):
+        logging.debug("Hey, FESOM is working!")
+        logging.debug("This method is trying to work on: %s", varname)
