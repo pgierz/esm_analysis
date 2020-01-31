@@ -2,6 +2,17 @@
 History
 =======
 
+0.3.4 (2020-01-31)
+------------------
+* Docs fixup
+* Links in wrong place in README.
+
+0.3.3 (2020-01-31)
+------------------
+
+* Adds version information with ``--version``
+* Fixup for multiple files having the requested variable
+
 0.3.2 (2019-12-18)
 ------------------
 

@@ -10,7 +10,7 @@ ESM Analysis
         :target: https://travis-ci.org/pgierz/esm_analysis
 
 .. image:: https://readthedocs.org/projects/esm-tools-analysis/badge/?version=latest
-        :target: https://esm-analysis.readthedocs.io/en/latest/?badge=latest
+        :target: https://esm-tools-analysis.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
 
 

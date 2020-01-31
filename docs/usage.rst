@@ -22,7 +22,7 @@ This eases some of the problems commonly experiences when sharing data with coll
 You can execute ``esm_analysis`` from anywhere within an experiment tree. It doesn’t matter if you are in ``outdata``, ``analysis``, ``work``, ``restart``, the top of the experiment, or an arbitrarily deep subfolder. The only pre-requisite here is that a file ``.top_of_experiment`` is in the top level directory. If this is not found, and ``esm_analysis`` finds the root of the filesystem, it will ask you for assistance.
 
 Example
-———————
+=======
 
 Let’s say you want to make a globally spatial average of ``temp2``, the 2 meter near surface air temperature. From anywhere in the experiment, just say::
 
