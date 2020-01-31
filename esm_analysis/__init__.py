@@ -4,6 +4,6 @@
 
 __author__ = """Paul Gierz"""
 __email__ = "pgierz@awi.de"
-__version__ = "0.3.2"
+__version__ = "0.3.3"
 
 from .esm_analysis import EsmAnalysis
