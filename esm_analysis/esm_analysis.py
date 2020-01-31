@@ -223,6 +223,7 @@ class EsmAnalysis(object):
         value/inner key is the variable short name. The inner value is a
         dictionary of code_number, levels, short_name, long_name.
         """
+        logging.debug("Starting to determine variable dict...")
         variables = {}
         # CLEANUP: This is a lot of duplicate code...
         all_code_files = glob.glob(
@@ -250,11 +251,13 @@ class EsmAnalysis(object):
         ]
 
         for f in deduped_streams:
+            logging.debug("Working on: %s", f)
             file_stream = (
                 f.replace(self.OUTDATA_DIR, "")
                 .replace(self.EXP_ID + "_" + self.NAME + "_", "")
                 .replace(".codes", "")
             )
+            file_stream = "".join(r"\d" if c.isdigit() else c for c in file_stream)
             # BUG: This depends on knowing that the file extension is GRIB. This might not always be the case...
             file_pattern = (
                 self.OUTDATA_DIR
@@ -263,8 +266,15 @@ class EsmAnalysis(object):
                 + self.NAME
                 + "_"
                 + file_stream
-                + "*grb"
+                + ".grb"
             )
+            # Replace digits with regex-able expression:
+            #
+            # POTENTIAL BUG: if two streams are very similar, e.g.
+            # EXP_ID_echam6_echam_stream123.grb and
+            # EXP_ID_echam6_echam_stream456.grb, these will end up being the
+            # same; and this fails...
+            logging.debug("File pattern will be: %s", file_pattern)
             variables[file_pattern] = {}
             with open(f) as code_file:
                 code_file_list = [" ".join(line.split()) for line in code_file]
@@ -278,6 +288,7 @@ class EsmAnalysis(object):
                         "short_name": short_name,
                         "long_name": long_name,
                     }
+        logging.debug("Variable dict given back will be: %s", variables)
         return variables
 
     def _get_files_for_variable_short_name_single_component(self, varname):
@@ -286,16 +297,29 @@ class EsmAnalysis(object):
             for short_name in short_names_in_file_pattern:
                 logging.debug("Checking: %s = %s", short_name, varname)
                 if short_name == varname:
-                    fpattern_list.append(sorted(glob.glob(file_pattern)))
+                    fpattern_list.append(
+                        sorted(
+                            list(
+                                filter(
+                                    re.compile(file_pattern).match,
+                                    [
+                                        self.OUTDATA_DIR + f
+                                        for f in os.listdir(self.OUTDATA_DIR)
+                                    ],
+                                )
+                            )
+                        )
+                    )
+                    # fpattern_list.append(sorted(glob.glob(file_pattern)))
         if len(fpattern_list) > 1:
             print("Multiple file patterns have requested variable %s" % varname)
-            for index, fpattern, component in enumerate(fpattern_list):
-                print("[%s] %s: %s" % (index + 1, component, fpattern))
-            index_choice = int(input("Please choose a filepattern: ") - 1)
+            for index, fpattern in enumerate(fpattern_list):
+                print("[%s] %s" % (index + 1, fpattern[0]))
+            index_choice = int(input("Please choose a filepattern: ")) - 1
             return fpattern_list[index_choice]
         return fpattern_list[0]
 
-    def get_files_for_variable_short_name(self, varname):
+    def get_component_for_variable_short_name(self, varname):
         """
         Checks all known component and gets a list of files that should be used
         for a specific variable name.
@@ -331,15 +355,38 @@ class EsmAnalysis(object):
                     logging.debug("Checking: %s = %s", short_name, varname)
                     if short_name == varname:
                         fpattern_list.append(
-                            (sorted(glob.glob(file_pattern)), component)
+                            (
+                                sorted(
+                                    list(
+                                        filter(
+                                            re.compile(file_pattern).match,
+                                            [
+                                                component.OUTDATA_DIR + f
+                                                for f in os.listdir(
+                                                    component.OUTDATA_DIR
+                                                )
+                                            ],
+                                        )
+                                    )
+                                ),
+                                component,
+                            )
                         )
-        if len(fpattern_list) > 1:
-            print("Multiple file patterns have requested variable %s" % varname)
-            for index, fpattern, component in enumerate(fpattern_list):
-                print("[%s] %s: %s" % (index + 1, component, fpattern))
-            index_choice = int(input("Please choose a filepattern: ") - 1)
-            return fpattern_list[index_choice]
-        return fpattern_list[0]
+                        # fpattern_list.append(
+                        #     (sorted(glob.glob(file_pattern)), component)
+                        # )
+        multi_comps = []
+        for index, (fpattern, component) in enumerate(fpattern_list):
+            if component not in multi_comps:
+                multi_comps.append(component)
+        if len(multi_comps) > 1:
+            print("Multiple components have requested variable %s" % varname)
+            for index, component in enumerate(multi_comps):
+                print("[%s] %s" % (index + 1, component.NAME))
+            index_choice = int(input("Please choose a component: ")) - 1
+            return multi_comps[index_choice]
+        else:
+            return multi_comps[0]
 
     # Some common operations. If a specific model needs to do this in a
     # different way, you can overload the methods (e.g. FESOM needs to do
@@ -348,20 +395,16 @@ class EsmAnalysis(object):
         """
         Generates a field mean over the entire model domain for a the specified varname.
         """
-        file_list, component = self.get_files_for_variable_short_name(varname)
-        logging.info("All files for %s:", component)
-        for f in file_list:
-            logging.info("- %s", f)
+        component = self.get_component_for_variable_short_name(varname)
         return component.fldmean(varname, file_list)
 
     def yseasmean(self, varname):
         """
         Generates a yseasmean over the entire model domain for the specified varname.
         """
-        file_list, component = self.get_files_for_variable_short_name(varname)
-        logging.info("All files for %s:", component)
+        component = self.get_component_for_variable_short_name(varname)
         return component.yseasmean(varname, file_list)
 
     def newest_climatology(self, varname):
-        file_list, component = self.get_files_for_variable_short_name(varname)
+        component = self.get_component_for_variable_short_name(varname)
         return component.newest_climatology(varname)

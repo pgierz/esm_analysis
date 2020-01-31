@@ -1,6 +1,17 @@
 # -*- coding: utf-8 -*-
 
-"""Console script for esm_analysis."""
+"""
+Console script for esm_analysis.
+
+This section describes how to use the command line interface
+
+There are 2 top level flags that can be set: ``--debug`` or ``--verbose``. If
+both are given, ``--debug`` has precedence.
+
+Entering ``esm_viz --help`` prints a list of currently implemented methods.
+
+The individual operators are documented below.
+"""
 import logging
 import sys
 
@@ -14,6 +25,7 @@ from esm_analysis import EsmAnalysis
 @click.group()
 @click.option("--debug", default=False, is_flag=True)
 @click.option("--verbose", default=False, is_flag=True)
+@click.version_option()
 def main(args=None, verbose=False, debug=False):
     """Console script for esm_analysis."""
     if debug:

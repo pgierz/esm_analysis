@@ -59,10 +59,14 @@ class EchamAnalysis(EsmAnalysis):
         based upon alphabetical sorting, since the modification timestamps
         might be messed up due to something like ``touch``
         """
+        logging.debug("Constructing filelist")
         flist = self._get_files_for_variable_short_name_single_component(varname)
         required_files = flist[-number_of_years * 12 :]
+        for f in required_files:
+            logging.debug("- %s", f)
+        logging.debug("Starting CDO")
         return self.CDO.timmean(
-            options="-f nc -t echam6",
+            options="-v -f nc -t echam6",
             input="-select,name=" + varname + " " + " ".join(required_files),
             output=self.ANALYSIS_DIR
             + "/"

@@ -24,6 +24,12 @@ class Logfile(object):
         df2 = df["Message"].str.split(expand=True)
         # We drop the first row since it says "Start of Experiment"
         log_df = pd.concat([df[1:]["Date"], df2[1:]], axis=1)
+
+        # Checks if Experiment over is in last row and drops it if needed:
+        lastrow = df2.tail(1)
+        if "Experimentover" in str(lastrow).replace(" ", ""):
+            log_df = log_df.head(-1)
+
         log_df.columns = [
             "Date",
             "Run Number",
