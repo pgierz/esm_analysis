@@ -14,13 +14,11 @@ ESM Analysis
         :alt: Documentation Status
 
 
-
-
 Analysis Scripts for ESM Simulations
 
 
 * Free software: GNU General Public License v3
-* Documentation: https://esm-analysis.readthedocs.io.
+* Documentation: https://esm-tools-analysis.readthedocs.io.
 
 
 Features
