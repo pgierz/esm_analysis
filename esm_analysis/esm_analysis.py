@@ -7,6 +7,7 @@ import importlib
 import logging
 import os
 import re
+import sys
 
 import cdo
 
@@ -204,6 +205,9 @@ class EsmAnalysis(object):
                     "Oops: Trouble initializing or no analysis class available for: %s"
                     % component
                 )
+                logging.error("Error was: %s", sys.exc_info()[0])
+                if component == "fesom":
+                    raise
 
     def determine_variable_dict_from_code_files(self):
         """

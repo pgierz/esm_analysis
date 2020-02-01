@@ -34,8 +34,8 @@ class FesomAnalysis(EsmAnalysis):
     def test_meth(self):
         print(ANALYSIS_fesom_sfc_timmean)
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
         self.ANALYSIS_DIR += self.NAME + "/"
         self.CONFIG_DIR += self.NAME + "/"
