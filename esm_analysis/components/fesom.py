@@ -3,7 +3,7 @@
 # @Email:  pgierz@awi.de
 # @Filename: fesom.py
 # @Last modified by:   pgierz
-# @Last modified time: 2020-02-03T09:22:37+01:00
+# @Last modified time: 2020-02-03T09:39:52+01:00
 
 
 """ Analysis Class for FESOM """
@@ -16,7 +16,9 @@ import xarray as xr
 
 
 from ..esm_analysis import EsmAnalysis
-from ..scripts.analysis_scripts.fesom import ANALYSIS_fesom_sfc_timmean as twod_analysis
+from ..scripts.analysis_scripts.fesom import ANALYSIS_fesom_sfc_timmean
+
+twodim_fesom_analysis = ANALYSIS_fesom_sfc_timmean.MainProgram
 
 
 class FesomAnalysis(EsmAnalysis):
@@ -91,5 +93,26 @@ class FesomAnalysis(EsmAnalysis):
         return ret_variables
 
     def newest_climatology(self, varname):
-        logging.debug("Hey, FESOM is working!")
         logging.debug("This method is trying to work on: %s", varname)
+        twodim_fesom_analysis(
+            varname,
+            self.OUTDATA_DIR,
+            output_file=self.ANALYSIS_DIR
+            + "/"
+            + self.EXP_ID
+            + "_"
+            + self.NAME
+            + "_"
+            + varname
+            + "_climmean.nc",
+        )
+        return xr.open_dataset(
+            self.ANALYSIS_DIR
+            + "/"
+            + self.EXP_ID
+            + "_"
+            + self.NAME
+            + "_"
+            + varname
+            + "_climmean.nc"
+        )
