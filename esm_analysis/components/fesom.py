@@ -107,6 +107,8 @@ class FesomAnalysis(EsmAnalysis):
                 + "_"
                 + varname
                 + "_climmean.nc",
+                # TODO: naming convention needs to come somewhere else...
+                naming_convention="esm_new",
             )
             p()
             logging.debug("done!")
