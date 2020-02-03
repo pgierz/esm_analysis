@@ -3,7 +3,7 @@
 # @Email:  pgierz@awi.de
 # @Filename: fesom.py
 # @Last modified by:   pgierz
-# @Last modified time: 2020-02-03T12:43:55+01:00
+# @Last modified time: 2020-02-03T12:48:05+01:00
 
 
 """ Analysis Class for FESOM """
@@ -95,6 +95,7 @@ class FesomAnalysis(EsmAnalysis):
     def newest_climatology(self, varname):
         logging.debug("This method is trying to work on: %s", varname)
         try:
+            logging.debug("Starting call...")
             p = twodim_fesom_analysis(
                 varname,
                 self.OUTDATA_DIR,
@@ -106,8 +107,11 @@ class FesomAnalysis(EsmAnalysis):
                 + "_"
                 + varname
                 + "_climmean.nc",
+                # TODO: naming convention needs to come somewhere else...
+                naming_convention="esm_new",
             )
             p()
+            logging.debug("done!")
         except:
             logging.error("Something went wrong with the analysis!")
             raise
