@@ -3,7 +3,7 @@
 # @Email:  pgierz@awi.de
 # @Filename: fesom.py
 # @Last modified by:   pgierz
-# @Last modified time: 2020-02-03T14:03:45+01:00
+# @Last modified time: 2020-02-03T14:56:15+01:00
 
 
 """ Analysis Class for FESOM """
@@ -47,6 +47,7 @@ class FesomAnalysis(EsmAnalysis):
         self.RESTART_DIR += self.NAME + "/"
 
         self._variables = self.determine_variable_dict_from_outdata_contents()
+        self._config = self._config.get("fesom", {})
 
         runscript_file = [f for f in os.listdir(self.SCRIPT_DIR) if f.endswith("run")][
             0
@@ -59,13 +60,10 @@ class FesomAnalysis(EsmAnalysis):
 
         namelist_config = f90nml.read(CONFIG_DIR + "/namelist.config")
         self.LEVELWISE_OUTPUT = namelist_config["inout"]["levelwise_output"]
+        self.MESH_ROTATED = self._config.get("mesh_rotated", False)
+        self.NAMING_CONVENTION = self._config.get("naming_convention", "esm_new")
 
-    def determine_variable_dict_from_outdata_contents(self):
-        # FIXME: File patterns are inconsistent, this is a "bad feature" in
-        # esm-runscripts:fesom_post_processing.
-        #
-        # IDEA: We can embed this information in the top-of-exp-tree file
-        # and ask for it if not there.
+    def _var_dict_esm_new(self):
         all_outdata_variables = [
             f.replace(self.EXP_ID + "_", "").split("fesom_")[1].replace(".nc", "")
             for f in os.listdir(self.OUTDATA_DIR)
@@ -95,6 +93,14 @@ class FesomAnalysis(EsmAnalysis):
             ret_variables[file_pattern] = {}
             ret_variables[file_pattern][just_variable] = {"short_name": just_variable}
         return ret_variables
+
+    def determine_variable_dict_from_outdata_contents(self):
+        # FIXME: File patterns are inconsistent, this is a "bad feature" in
+        # esm-runscripts:fesom_post_processing.
+        #
+        # IDEA: We can embed this information in the top-of-exp-tree file
+        # and ask for it if not there.
+        return getattr(self, "_var_dict_" + self.NAMING_CONVENTION)()
 
     def newest_climatology(self, varname):
         logging.debug("This method is trying to work on: %s", varname)
@@ -193,3 +199,8 @@ class FesomAnalysis(EsmAnalysis):
             + varname
             + "_ymonmean.nc"
         )
+
+    def AMOC(self):
+        """
+        Generates AMOC from vertical velocities.
+        """

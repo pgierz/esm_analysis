@@ -3,7 +3,7 @@
 # @Email:  pgierz@awi.de
 # @Filename: esm_analysis.py
 # @Last modified by:   pgierz
-# @Last modified time: 2020-02-03T12:40:43+01:00
+# @Last modified time: 2020-02-03T14:44:22+01:00
 
 
 # -*- coding: utf-8 -*-
@@ -18,6 +18,12 @@ import re
 import sys
 
 import cdo
+import yaml
+
+
+def load_yaml(f):
+    with open(f) as yml:
+        return yaml.loads(f, Loader=yaml.SafeLoader)
 
 
 def walk_up(bottom):
@@ -128,6 +134,8 @@ class EsmAnalysis(object):
             self.EXP_BASE = exp_base
 
         self.EXP_ID = os.path.basename(self.EXP_BASE)
+
+        self._config = load_yaml(os.path.join(self.EXP_BASE, ".top_of_exp_tree"))
 
         self.ANALYSIS_DIR = self.EXP_BASE + "/analysis/"
         self.CONFIG_DIR = self.EXP_BASE + "/config/"
