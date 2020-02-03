@@ -3,7 +3,7 @@
 # @Email:  pgierz@awi.de
 # @Filename: fesom.py
 # @Last modified by:   pgierz
-# @Last modified time: 2020-02-03T12:48:05+01:00
+# @Last modified time: 2020-02-03T13:14:30+01:00
 
 
 """ Analysis Class for FESOM """
@@ -109,6 +109,7 @@ class FesomAnalysis(EsmAnalysis):
                 + "_climmean.nc",
                 # TODO: naming convention needs to come somewhere else...
                 naming_convention="esm_new",
+                mesh=self.MESH,
             )
             p()
             logging.debug("done!")
@@ -141,6 +142,7 @@ class FesomAnalysis(EsmAnalysis):
                 + varname
                 + "_yseasmean.nc",
                 timintv="season",
+                mesh=self.MESH,
             )
             p()
         except:
@@ -154,8 +156,7 @@ class FesomAnalysis(EsmAnalysis):
             + self.NAME
             + "_"
             + varname
-            + "_yseasmean.nc",
-            mesh=self.MESH,
+            + "_yseasmean.nc"
         )
 
     def ymonmean(self, varname):
