@@ -3,12 +3,11 @@
 # @Email:  pgierz@awi.de
 # @Filename: fesom.py
 # @Last modified by:   pgierz
-# @Last modified time: 2020-01-31T19:07:04+01:00
+# @Last modified time: 2020-02-03T07:07:30+01:00
 
 
 """ Analysis Class for FESOM """
 
-import glob
 import logging
 import os
 
@@ -17,7 +16,7 @@ import xarray as xr
 
 
 from ..esm_analysis import EsmAnalysis
-from ..scripts.analysis_scripts.fesom import ANALYSIS_fesom_sfc_timmean
+from ..scripts.analysis_scripts.fesom import ANALYSIS_fesom_sfc_timmean as twod_analysis
 
 
 class FesomAnalysis(EsmAnalysis):
@@ -56,14 +55,19 @@ class FesomAnalysis(EsmAnalysis):
         self.MESH = pf.load_mesh(mesh_dir, usepickle=False)
 
     def determine_variable_dict_from_outdata_contents(self):
-        all_outdata_variables = {
+        # FIXME: File patterns are inconsistent, this is a "bad feature" in
+        # esm-runscripts:fesom_post_processing.
+        #
+        # IDEA: We can embed this information in the top-of-exp-tree file
+        # and ask for it if not there.
+        all_outdata_variables = [
             f.replace(self.EXP_ID + "_", "").split("_fesom")[0]
             for f in os.listdir(self.OUTDATA_DIR)
-        }
+            if f.startswith(self.EXP_ID)
+        ]
+
         variables = {}
         for file_stream in all_outdata_variables:
-            # FIXME: File patterns are inconsistent, this is a bug in
-            # esm-runscripts:fesom_post_processing.
             file_pattern = (
                 self.OUTDATA_DIR
                 + self.EXP_ID
