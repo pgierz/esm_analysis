@@ -23,7 +23,7 @@ import yaml
 
 def load_yaml(f):
     with open(f) as yml:
-        return yaml.loads(f, Loader=yaml.SafeLoader)
+        return yaml.load(yml, Loader=yaml.SafeLoader)
 
 
 def walk_up(bottom):
@@ -136,6 +136,8 @@ class EsmAnalysis(object):
         self.EXP_ID = os.path.basename(self.EXP_BASE)
 
         self._config = load_yaml(os.path.join(self.EXP_BASE, ".top_of_exp_tree"))
+
+        logging.debug(self._config)
 
         self.ANALYSIS_DIR = self.EXP_BASE + "/analysis/"
         self.CONFIG_DIR = self.EXP_BASE + "/config/"

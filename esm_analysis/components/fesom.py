@@ -46,7 +46,6 @@ class FesomAnalysis(EsmAnalysis):
         self.OUTDATA_DIR += self.NAME + "/"
         self.RESTART_DIR += self.NAME + "/"
 
-        self._variables = self.determine_variable_dict_from_outdata_contents()
         self._config = self._config.get("fesom", {})
 
         runscript_file = [f for f in os.listdir(self.SCRIPT_DIR) if f.endswith("run")][
@@ -56,12 +55,15 @@ class FesomAnalysis(EsmAnalysis):
             mesh_dir = [l.strip() for l in runscript.readlines() if "MESH_DIR" in l][
                 0
             ].split("=")[-1]
-        self.MESH = pf.load_mesh(mesh_dir, usepickle=False)
 
-        namelist_config = f90nml.read(CONFIG_DIR + "/namelist.config")
+        namelist_config = f90nml.read(self.CONFIG_DIR + "/namelist.config")
         self.LEVELWISE_OUTPUT = namelist_config["inout"]["levelwise_output"]
         self.MESH_ROTATED = self._config.get("mesh_rotated", False)
         self.NAMING_CONVENTION = self._config.get("naming_convention", "esm_new")
+
+        self._variables = self.determine_variable_dict_from_outdata_contents()
+        abg = [0, 0, 0] if self.MESH_ROTATED else [50, 15, -90]
+        self.MESH = pf.load_mesh(mesh_dir, usepickle=False, get3d=False, abg=abg)
 
     def _var_dict_esm_new(self):
         all_outdata_variables = [
@@ -119,6 +121,7 @@ class FesomAnalysis(EsmAnalysis):
                 mesh=self.MESH,
                 levelwise_output=self.LEVELWISE_OUTPUT,
                 mesh_rotated=self.MESH_ROTATED,
+                naming_convention="esm_new",
             )
             p()
         except:
@@ -152,6 +155,8 @@ class FesomAnalysis(EsmAnalysis):
                 timintv="season",
                 mesh=self.MESH,
                 levelwise_output=self.LEVELWISE_OUTPUT,
+                naming_convention="esm_new",
+                mesh_rotated=self.MESH_ROTATED
             )
             p()
         except:
@@ -185,6 +190,8 @@ class FesomAnalysis(EsmAnalysis):
                 timintv="month",
                 mesh=self.MESH,
                 levelwise_output=self.LEVELWISE_OUTPUT,
+                naming_convention="esm_new",
+                mesh_rotated=self.MESH_ROTATED
             )
             p()
         except:
