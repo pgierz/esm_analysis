@@ -3,7 +3,7 @@
 # @Email:  pgierz@awi.de
 # @Filename: fesom.py
 # @Last modified by:   pgierz
-# @Last modified time: 2020-02-03T07:07:30+01:00
+# @Last modified time: 2020-02-03T09:12:16+01:00
 
 
 """ Analysis Class for FESOM """
@@ -61,21 +61,25 @@ class FesomAnalysis(EsmAnalysis):
         # IDEA: We can embed this information in the top-of-exp-tree file
         # and ask for it if not there.
         all_outdata_variables = [
-            f.replace(self.EXP_ID + "_", "").split("_fesom")[0]
+            f.replace(self.EXP_ID + "_", "").split("fesom_")[1].replace(".nc", "")
             for f in os.listdir(self.OUTDATA_DIR)
             if f.startswith(self.EXP_ID)
         ]
 
-        variables = {}
-        for file_stream in all_outdata_variables:
+        variables = {
+            "".join(r"\d" if c.isdigit() else c for c in file_stream)
+            for file_stream in all_outdata_variables
+        }
+
+        for variable_pattern in variables:
             file_pattern = (
                 self.OUTDATA_DIR
                 + self.EXP_ID
                 + "_"
-                + file_stream
-                + "_"
                 + self.NAME
-                + "*nc"
+                + "_"
+                + variable_pattern
+                + ".*nc"
             )
             variables[file_pattern] = {}
             variables[file_pattern][file_stream] = {"short_name": file_stream}
