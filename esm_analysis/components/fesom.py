@@ -95,6 +95,7 @@ class FesomAnalysis(EsmAnalysis):
     def newest_climatology(self, varname):
         logging.debug("This method is trying to work on: %s", varname)
         try:
+            logging.debug("Starting call...")
             p = twodim_fesom_analysis(
                 varname,
                 self.OUTDATA_DIR,
@@ -108,16 +109,17 @@ class FesomAnalysis(EsmAnalysis):
                 + "_climmean.nc",
             )
             p()
+            logging.debug("done!")
         except:
             logging.error("Something went wrong with the analysis!")
             raise
-        return xr.open_dataset(
-            self.ANALYSIS_DIR
-            + "/"
-            + self.EXP_ID
-            + "_"
-            + self.NAME
-            + "_"
-            + varname
-            + "_climmean.nc"
-        )
+        #return xr.open_dataset(
+        #    self.ANALYSIS_DIR
+        #    + "/"
+        #    + self.EXP_ID
+        #    + "_"
+        #    + self.NAME
+        #    + "_"
+        #    + varname
+        #    + "_climmean.nc"
+        #)
