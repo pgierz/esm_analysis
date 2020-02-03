@@ -3,7 +3,7 @@
 # @Email:  pgierz@awi.de
 # @Filename: fesom.py
 # @Last modified by:   pgierz
-# @Last modified time: 2020-02-03T09:18:29+01:00
+# @Last modified time: 2020-02-03T09:19:40+01:00
 
 
 """ Analysis Class for FESOM """
@@ -88,7 +88,7 @@ class FesomAnalysis(EsmAnalysis):
             )
             ret_variables[file_pattern] = {}
             ret_variables[file_pattern][just_variable] = {"short_name": just_variable}
-        return variables
+        return ret_variables
 
     def newest_climatology(self, varname):
         logging.debug("Hey, FESOM is working!")
