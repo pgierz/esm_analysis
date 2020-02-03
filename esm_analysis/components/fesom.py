@@ -3,7 +3,7 @@
 # @Email:  pgierz@awi.de
 # @Filename: fesom.py
 # @Last modified by:   pgierz
-# @Last modified time: 2020-02-03T13:14:30+01:00
+# @Last modified time: 2020-02-03T14:03:45+01:00
 
 
 """ Analysis Class for FESOM """
@@ -12,6 +12,7 @@ import logging
 import os
 
 import pyfesom as pf
+import f90nml
 import xarray as xr
 
 
@@ -56,6 +57,9 @@ class FesomAnalysis(EsmAnalysis):
             ].split("=")[-1]
         self.MESH = pf.load_mesh(mesh_dir, usepickle=False)
 
+        namelist_config = f90nml.read(CONFIG_DIR + "/namelist.config")
+        self.LEVELWISE_OUTPUT = namelist_config["inout"]["levelwise_output"]
+
     def determine_variable_dict_from_outdata_contents(self):
         # FIXME: File patterns are inconsistent, this is a "bad feature" in
         # esm-runscripts:fesom_post_processing.
@@ -95,7 +99,6 @@ class FesomAnalysis(EsmAnalysis):
     def newest_climatology(self, varname):
         logging.debug("This method is trying to work on: %s", varname)
         try:
-            logging.debug("Starting call...")
             p = twodim_fesom_analysis(
                 varname,
                 self.OUTDATA_DIR,
@@ -107,12 +110,10 @@ class FesomAnalysis(EsmAnalysis):
                 + "_"
                 + varname
                 + "_climmean.nc",
-                # TODO: naming convention needs to come somewhere else...
-                naming_convention="esm_new",
                 mesh=self.MESH,
+                levelwise_output=self.LEVELWISE_OUTPUT,
             )
             p()
-            logging.debug("done!")
         except:
             logging.error("Something went wrong with the analysis!")
             raise
@@ -143,6 +144,7 @@ class FesomAnalysis(EsmAnalysis):
                 + "_yseasmean.nc",
                 timintv="season",
                 mesh=self.MESH,
+                levelwise_output=self.LEVELWISE_OUTPUT,
             )
             p()
         except:
@@ -175,6 +177,7 @@ class FesomAnalysis(EsmAnalysis):
                 + "_ymonmean.nc",
                 timintv="month",
                 mesh=self.MESH,
+                levelwise_output=self.LEVELWISE_OUTPUT,
             )
             p()
         except:
