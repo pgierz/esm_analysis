@@ -3,7 +3,7 @@
 # @Email:  pgierz@awi.de
 # @Filename: fesom.py
 # @Last modified by:   pgierz
-# @Last modified time: 2020-02-03T09:19:40+01:00
+# @Last modified time: 2020-02-03T09:22:37+01:00
 
 
 """ Analysis Class for FESOM """
@@ -72,7 +72,7 @@ class FesomAnalysis(EsmAnalysis):
             for file_stream in all_outdata_variables
         }
         just_variables = {
-            "".join("" if c.isdigit() else c for c in file_stream)
+            "".join("" if c.isdigit() else c for c in file_stream)[:-1]
             for file_stream in all_outdata_variables
         }
 
