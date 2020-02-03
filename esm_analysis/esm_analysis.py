@@ -1,3 +1,11 @@
+# @Author: Paul Gierz <pgierz>
+# @Date:   2020-02-01T10:07:07+01:00
+# @Email:  pgierz@awi.de
+# @Filename: esm_analysis.py
+# @Last modified by:   pgierz
+# @Last modified time: 2020-02-03T12:40:43+01:00
+
+
 # -*- coding: utf-8 -*-
 
 """Main module."""
@@ -400,14 +408,21 @@ class EsmAnalysis(object):
         Generates a field mean over the entire model domain for a the specified varname.
         """
         component = self.get_component_for_variable_short_name(varname)
-        return component.fldmean(varname, file_list)
+        return component.fldmean(varname)
+
+    def ymonmean(self, varname):
+        """
+        Generates a ymonmean over the entire model domain for the specified varname.
+        """
+        component = self.get_component_for_variable_short_name(varname)
+        return component.ymonmean(varname)
 
     def yseasmean(self, varname):
         """
         Generates a yseasmean over the entire model domain for the specified varname.
         """
         component = self.get_component_for_variable_short_name(varname)
-        return component.yseasmean(varname, file_list)
+        return component.yseasmean(varname)
 
     def newest_climatology(self, varname):
         component = self.get_component_for_variable_short_name(varname)

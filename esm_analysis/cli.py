@@ -1,3 +1,11 @@
+# @Author: Paul Gierz <pgierz>
+# @Date:   2020-01-31T19:03:13+01:00
+# @Email:  pgierz@awi.de
+# @Filename: cli.py
+# @Last modified by:   pgierz
+# @Last modified time: 2020-02-03T12:41:49+01:00
+
+
 # -*- coding: utf-8 -*-
 
 """
@@ -61,6 +69,35 @@ def fldmean(varname, preferred_analysis_dir=None):
         preferred_analysis_dir=preferred_analysis_dir
     )
     analyzer.fldmean(varname)
+
+
+@main.command()
+@click.argument("varname")
+@click.option("--preferred_analysis_dir", default=None)
+def ymonmean(varname, preferred_analysis_dir=None):
+    """Fldmean generator
+
+    Parameters
+    ----------
+    varname : str
+        The variable name to make a ymonmean for. This will automatically figure
+        out which model ``varname`` belongs to.
+
+    Examples
+    --------
+
+    ..code ::
+
+        $ esm_analysis ymonmean temp2
+    """
+    click.echo("This will generate a ymonmean for: %s" % varname)
+    if preferred_analysis_dir:
+        click.echo("You passed in preferred_analysis_dir: %s" % preferred_analysis_dir)
+    analyzer = EsmAnalysis(preferred_analysis_dir=preferred_analysis_dir)
+    analyzer.initialize_analysis_components(
+        preferred_analysis_dir=preferred_analysis_dir
+    )
+    analyzer.ymonmean(varname)
 
 
 @main.command()

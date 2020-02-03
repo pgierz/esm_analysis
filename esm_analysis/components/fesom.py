@@ -3,7 +3,7 @@
 # @Email:  pgierz@awi.de
 # @Filename: fesom.py
 # @Last modified by:   pgierz
-# @Last modified time: 2020-02-03T09:53:34+01:00
+# @Last modified time: 2020-02-03T12:43:55+01:00
 
 
 """ Analysis Class for FESOM """
@@ -120,4 +120,68 @@ class FesomAnalysis(EsmAnalysis):
             + "_"
             + varname
             + "_climmean.nc"
+        )
+
+    def yseasmean(self, varname):
+        logging.debug("This method is trying to work on: %s", varname)
+        try:
+            p = twodim_fesom_analysis(
+                varname,
+                self.OUTDATA_DIR,
+                output_file=self.ANALYSIS_DIR
+                + "/"
+                + self.EXP_ID
+                + "_"
+                + self.NAME
+                + "_"
+                + varname
+                + "_yseasmean.nc",
+                timintv="season",
+            )
+            p()
+        except:
+            logging.error("Something went wrong with the analysis!")
+            raise
+        return xr.open_dataset(
+            self.ANALYSIS_DIR
+            + "/"
+            + self.EXP_ID
+            + "_"
+            + self.NAME
+            + "_"
+            + varname
+            + "_yseasmean.nc",
+            mesh=self.MESH,
+        )
+
+    def ymonmean(self, varname):
+        logging.debug("This method is trying to work on: %s", varname)
+        try:
+            p = twodim_fesom_analysis(
+                varname,
+                self.OUTDATA_DIR,
+                output_file=self.ANALYSIS_DIR
+                + "/"
+                + self.EXP_ID
+                + "_"
+                + self.NAME
+                + "_"
+                + varname
+                + "_ymonmean.nc",
+                timintv="month",
+                mesh=self.MESH,
+            )
+            p()
+        except:
+            logging.error("Something went wrong with the analysis!")
+            raise
+        return xr.open_dataset(
+            self.ANALYSIS_DIR
+            + "/"
+            + self.EXP_ID
+            + "_"
+            + self.NAME
+            + "_"
+            + varname
+            + "_ymonmean.nc"
         )
