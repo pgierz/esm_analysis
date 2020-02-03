@@ -3,7 +3,7 @@
 # @Email:  pgierz@awi.de
 # @Filename: fesom.py
 # @Last modified by:   pgierz
-# @Last modified time: 2020-02-03T09:12:16+01:00
+# @Last modified time: 2020-02-03T09:16:50+01:00
 
 
 """ Analysis Class for FESOM """
@@ -70,8 +70,12 @@ class FesomAnalysis(EsmAnalysis):
             "".join(r"\d" if c.isdigit() else c for c in file_stream)
             for file_stream in all_outdata_variables
         }
+        just_variables = {
+            "".join("" if c.isdigit() else c for c in file_stream)
+            for file_stream in all_outdata_variables
+        }
 
-        for variable_pattern in variables:
+        for just_variable, variable_pattern in zip(just_variables, variables):
             file_pattern = (
                 self.OUTDATA_DIR
                 + self.EXP_ID
@@ -82,7 +86,7 @@ class FesomAnalysis(EsmAnalysis):
                 + ".*nc"
             )
             variables[file_pattern] = {}
-            variables[file_pattern][file_stream] = {"short_name": file_stream}
+            variables[file_pattern][just_variable] = {"short_name": just_variable}
         return variables
 
     def newest_climatology(self, varname):
