@@ -3,7 +3,7 @@
 # @Email:  pgierz@awi.de
 # @Filename: fesom.py
 # @Last modified by:   pgierz
-# @Last modified time: 2020-02-03T14:56:15+01:00
+# @Last modified time: 2020-02-03T15:14:47+01:00
 
 
 """ Analysis Class for FESOM """
@@ -118,6 +118,7 @@ class FesomAnalysis(EsmAnalysis):
                 + "_climmean.nc",
                 mesh=self.MESH,
                 levelwise_output=self.LEVELWISE_OUTPUT,
+                mesh_rotated=self.MESH_ROTATED,
             )
             p()
         except:
