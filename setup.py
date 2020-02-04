@@ -11,14 +11,16 @@ with open("README.rst") as readme_file:
 with open("HISTORY.rst") as history_file:
     history = history_file.read()
 
-requirements = ["cdo", "Click>=6.0", "pandas", "tabulate", "regex-engine"]
+requirements = ["cdo", "Click>=6.0", "pandas", "tabulate", "regex-engine", "pyyaml"]
 
 setup_requirements = []
 
 test_requirements = []
 
 # Unpublished packages not on PyPI (e.g pyfesom)
-dependency_links=['https://github.com/FESOM/pyfesom/tarball/master']#, 'http://github.com/user/repo/tarball/master#egg=package-1.0']
+dependency_links = [
+    "https://github.com/FESOM/pyfesom/tarball/master"
+]  # , 'http://github.com/user/repo/tarball/master#egg=package-1.0']
 
 setup(
     author="Paul Gierz",
@@ -46,7 +48,7 @@ setup(
     keywords="esm_analysis",
     name="esm_analysis",
     packages=find_packages(),
-    #packages=find_packages(include=["esm_analysis"]),
+    # packages=find_packages(include=["esm_analysis"]),
     setup_requires=setup_requirements,
     test_suite="tests",
     tests_require=test_requirements,
