@@ -3,21 +3,23 @@
 # @Email:  pgierz@awi.de
 # @Filename: fesom.py
 # @Last modified by:   pgierz
-# @Last modified time: 2020-01-31T19:07:04+01:00
+# @Last modified time: 2020-02-03T15:14:47+01:00
 
 
 """ Analysis Class for FESOM """
 
-import glob
 import logging
 import os
 
 import pyfesom as pf
+import f90nml
 import xarray as xr
 
 
 from ..esm_analysis import EsmAnalysis
 from ..scripts.analysis_scripts.fesom import ANALYSIS_fesom_sfc_timmean
+
+twodim_fesom_analysis = ANALYSIS_fesom_sfc_timmean.MainProgram
 
 
 class FesomAnalysis(EsmAnalysis):
@@ -34,8 +36,8 @@ class FesomAnalysis(EsmAnalysis):
     def test_meth(self):
         print(ANALYSIS_fesom_sfc_timmean)
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
         self.ANALYSIS_DIR += self.NAME + "/"
         self.CONFIG_DIR += self.NAME + "/"
@@ -44,7 +46,7 @@ class FesomAnalysis(EsmAnalysis):
         self.OUTDATA_DIR += self.NAME + "/"
         self.RESTART_DIR += self.NAME + "/"
 
-        self._variables = self.determine_variable_dict_from_outdata_contents()
+        self._config = self._config.get("fesom", {})
 
         runscript_file = [f for f in os.listdir(self.SCRIPT_DIR) if f.endswith("run")][
             0
@@ -53,32 +55,56 @@ class FesomAnalysis(EsmAnalysis):
             mesh_dir = [l.strip() for l in runscript.readlines() if "MESH_DIR" in l][
                 0
             ].split("=")[-1]
-        self.MESH = pf.load_mesh(mesh_dir, usepickle=False)
 
-    def determine_variable_dict_from_outdata_contents(self):
-        all_outdata_variables = {
-            f.replace(self.EXP_ID + "_", "").split("_fesom")[0]
+        namelist_config = f90nml.read(self.CONFIG_DIR + "/namelist.config")
+        self.LEVELWISE_OUTPUT = namelist_config["inout"]["levelwise_output"]
+        self.MESH_ROTATED = self._config.get("mesh_rotated", False)
+        self.NAMING_CONVENTION = self._config.get("naming_convention", "esm_new")
+
+        self._variables = self.determine_variable_dict_from_outdata_contents()
+        abg = [0, 0, 0] if self.MESH_ROTATED else [50, 15, -90]
+        self.MESH = pf.load_mesh(mesh_dir, usepickle=False, get3d=False, abg=abg)
+
+    def _var_dict_esm_new(self):
+        all_outdata_variables = [
+            f.replace(self.EXP_ID + "_", "").split("fesom_")[1].replace(".nc", "")
             for f in os.listdir(self.OUTDATA_DIR)
+            if f.startswith(self.EXP_ID)
+        ]
+
+        ret_variables = {}
+        variables = {
+            "".join(r"\d" if c.isdigit() else c for c in file_stream)
+            for file_stream in all_outdata_variables
         }
-        variables = {}
-        for file_stream in all_outdata_variables:
-            # FIXME: File patterns are inconsistent, this is a bug in
-            # esm-runscripts:fesom_post_processing.
+        just_variables = {
+            "".join("" if c.isdigit() else c for c in file_stream)[:-1]
+            for file_stream in all_outdata_variables
+        }
+
+        for just_variable, variable_pattern in zip(just_variables, variables):
             file_pattern = (
                 self.OUTDATA_DIR
                 + self.EXP_ID
                 + "_"
-                + file_stream
-                + "_"
                 + self.NAME
-                + "*nc"
+                + "_"
+                + variable_pattern
+                + ".*nc"
             )
-            variables[file_pattern] = {}
-            variables[file_pattern][file_stream] = {"short_name": file_stream}
-        return variables
+            ret_variables[file_pattern] = {}
+            ret_variables[file_pattern][just_variable] = {"short_name": just_variable}
+        return ret_variables
+
+    def determine_variable_dict_from_outdata_contents(self):
+        # FIXME: File patterns are inconsistent, this is a "bad feature" in
+        # esm-runscripts:fesom_post_processing.
+        #
+        # IDEA: We can embed this information in the top-of-exp-tree file
+        # and ask for it if not there.
+        return getattr(self, "_var_dict_" + self.NAMING_CONVENTION)()
 
     def newest_climatology(self, varname):
-        logging.debug("Hey, FESOM is working!")
         logging.debug("This method is trying to work on: %s", varname)
         try:
             p = twodim_fesom_analysis(
@@ -95,6 +121,7 @@ class FesomAnalysis(EsmAnalysis):
                 mesh=self.MESH,
                 levelwise_output=self.LEVELWISE_OUTPUT,
                 mesh_rotated=self.MESH_ROTATED,
+                naming_convention="esm_new",
             )
             p()
         except:
@@ -128,6 +155,8 @@ class FesomAnalysis(EsmAnalysis):
                 timintv="season",
                 mesh=self.MESH,
                 levelwise_output=self.LEVELWISE_OUTPUT,
+                naming_convention="esm_new",
+                mesh_rotated=self.MESH_ROTATED,
             )
             p()
         except:
@@ -161,6 +190,8 @@ class FesomAnalysis(EsmAnalysis):
                 timintv="month",
                 mesh=self.MESH,
                 levelwise_output=self.LEVELWISE_OUTPUT,
+                naming_convention="esm_new",
+                mesh_rotated=self.MESH_ROTATED,
             )
             p()
         except:

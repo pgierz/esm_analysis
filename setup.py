@@ -11,7 +11,7 @@ with open("README.rst") as readme_file:
 with open("HISTORY.rst") as history_file:
     history = history_file.read()
 
-requirements = ["cdo", "Click>=6.0", "pandas", "tabulate"]
+requirements = ["cdo", "Click>=6.0", "pandas", "tabulate", "regex-engine"]
 
 setup_requirements = []
 
@@ -51,6 +51,6 @@ setup(
     test_suite="tests",
     tests_require=test_requirements,
     url="https://github.com/pgierz/esm_analysis",
-    version="0.3.4",
+    version="0.4.0",
     zip_safe=False,
 )

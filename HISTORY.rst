@@ -5,6 +5,9 @@ History
 This project was inspired by the many headaches caused by it not existing.
 Here's what has happened so far:
 
+0.4.0 (2020-02-03)
+------------------
+* ``FESOM 1.4`` climatologies
 
 0.3.4 (2020-01-31)
 ------------------
