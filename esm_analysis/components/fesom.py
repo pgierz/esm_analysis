@@ -80,3 +80,108 @@ class FesomAnalysis(EsmAnalysis):
     def newest_climatology(self, varname):
         logging.debug("Hey, FESOM is working!")
         logging.debug("This method is trying to work on: %s", varname)
+        try:
+            p = twodim_fesom_analysis(
+                varname,
+                self.OUTDATA_DIR,
+                output_file=self.ANALYSIS_DIR
+                + "/"
+                + self.EXP_ID
+                + "_"
+                + self.NAME
+                + "_"
+                + varname
+                + "_climmean.nc",
+                mesh=self.MESH,
+                levelwise_output=self.LEVELWISE_OUTPUT,
+                mesh_rotated=self.MESH_ROTATED,
+            )
+            p()
+        except:
+            logging.error("Something went wrong with the analysis!")
+            raise
+        return xr.open_dataset(
+            self.ANALYSIS_DIR
+            + "/"
+            + self.EXP_ID
+            + "_"
+            + self.NAME
+            + "_"
+            + varname
+            + "_climmean.nc"
+        )
+
+    def yseasmean(self, varname):
+        logging.debug("This method is trying to work on: %s", varname)
+        try:
+            p = twodim_fesom_analysis(
+                varname,
+                self.OUTDATA_DIR,
+                output_file=self.ANALYSIS_DIR
+                + "/"
+                + self.EXP_ID
+                + "_"
+                + self.NAME
+                + "_"
+                + varname
+                + "_yseasmean.nc",
+                timintv="season",
+                mesh=self.MESH,
+                levelwise_output=self.LEVELWISE_OUTPUT,
+            )
+            p()
+        except:
+            logging.error("Something went wrong with the analysis!")
+            raise
+        return xr.open_dataset(
+            self.ANALYSIS_DIR
+            + "/"
+            + self.EXP_ID
+            + "_"
+            + self.NAME
+            + "_"
+            + varname
+            + "_yseasmean.nc"
+        )
+
+    def ymonmean(self, varname):
+        logging.debug("This method is trying to work on: %s", varname)
+        try:
+            p = twodim_fesom_analysis(
+                varname,
+                self.OUTDATA_DIR,
+                output_file=self.ANALYSIS_DIR
+                + "/"
+                + self.EXP_ID
+                + "_"
+                + self.NAME
+                + "_"
+                + varname
+                + "_ymonmean.nc",
+                timintv="month",
+                mesh=self.MESH,
+                levelwise_output=self.LEVELWISE_OUTPUT,
+            )
+            p()
+        except:
+            logging.error("Something went wrong with the analysis!")
+            raise
+        return xr.open_dataset(
+            self.ANALYSIS_DIR
+            + "/"
+            + self.EXP_ID
+            + "_"
+            + self.NAME
+            + "_"
+            + varname
+            + "_ymonmean.nc"
+        )
+
+    def AMOC(self):
+        """
+        Generates AMOC from vertical velocities.
+        """
+        # Steps:
+        # 1. Gather wo files
+        # 2. Get mask file
+        # 3.

@@ -1,6 +1,36 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# @Author: Paul Gierz <pgierz>
+# @Date:   2020-02-04T07:04:02+01:00
+# @Email:  pgierz@awi.de
+# @Filename: esm_analysis.py
+# @Last modified by:   pgierz
+# @Last modified time: 2020-02-04T07:16:11+01:00
+"""
+The ESM Analysis module allows for creation of several common analyis from
+Python objects.
 
-"""Main module."""
+The main object you probably want to use is: ``EsmAnalysis``. You can create one
+like this, if you are currently working within an experiment directory::
+
+    >>> analyser = EsmAnalysis()
+
+Optionally, you can give it a path where to start from::
+
+    >>> analyser = EsmAnalysis(exp_base="/work/ba0989/a270077/AWICM_PISM/LGM_011")
+
+You can also tell it where to store analysis::
+
+    >>> analyser = EsmAnalysis(preferred_analysis_dir="/work/ba0989/a270077/store_analysis_here")
+
+Once you have created the ``analyzer`` object, you can use the attached methods
+to quickly get some typical analyses. The methods always return an
+``xarray.Dataset`` object. Typically, the only required argument is the variable
+name.
+
+
+    >>> t2m_fldmean = analyser.fldmean("temp2")
+"""
 
 import glob
 import importlib
@@ -396,14 +426,21 @@ class EsmAnalysis(object):
         Generates a field mean over the entire model domain for a the specified varname.
         """
         component = self.get_component_for_variable_short_name(varname)
-        return component.fldmean(varname, file_list)
+        return component.fldmean(varname)
+
+    def ymonmean(self, varname):
+        """
+        Generates a yseasmean over the entire model domain for the specified varname.
+        """
+        component = self.get_component_for_variable_short_name(varname)
+        return component.ymonmean(varname)
 
     def yseasmean(self, varname):
         """
         Generates a yseasmean over the entire model domain for the specified varname.
         """
         component = self.get_component_for_variable_short_name(varname)
-        return component.yseasmean(varname, file_list)
+        return component.yseasmean(varname)
 
     def newest_climatology(self, varname):
         component = self.get_component_for_variable_short_name(varname)

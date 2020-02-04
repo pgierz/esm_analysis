@@ -16,20 +16,12 @@ ESM Analysis
 
 Analysis Scripts for ESM Simulations
 
-
-* Free software: GNU General Public License v3
-* Documentation: https://esm-tools-analysis.readthedocs.io.
-
+.. include:: ../QUICKSTART.rst
 
 Features
 --------
 
-* TODO
-
-Credits
--------
-
-This package was created with Cookiecutter_ and the `audreyr/cookiecutter-pypackage`_ project template.
-
-.. _Cookiecutter: https://github.com/audreyr/cookiecutter
-.. _`audreyr/cookiecutter-pypackage`: https://github.com/audreyr/cookiecutter-pypackage
+* Command line interface to quickly create common analyses
+* Python library usage
+* Free software: GNU General Public License v3
+* Documentation: https://esm-tools-analysis.readthedocs.io.

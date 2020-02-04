@@ -22,7 +22,7 @@ This eases some of the problems commonly experiences when sharing data with coll
 You can execute ``esm_analysis`` from anywhere within an experiment tree. It doesn’t matter if you are in ``outdata``, ``analysis``, ``work``, ``restart``, the top of the experiment, or an arbitrarily deep subfolder. The only pre-requisite here is that a file ``.top_of_experiment`` is in the top level directory. If this is not found, and ``esm_analysis`` finds the root of the filesystem, it will ask you for assistance.
 
 Example
-=======
+-------
 
 Let’s say you want to make a globally spatial average of ``temp2``, the 2 meter near surface air temperature. From anywhere in the experiment, just say::
 
@@ -35,10 +35,35 @@ Let’s say you want to make a globally spatial average of ``temp2``, the 2 mete
 * Make an analysis directory for you
 * Generate a file ``${EXP_ID}_echam6_temp2_fldmean.nc``
 
-=====
-Usage
-=====
+=============
+Library Usage
+=============
 
 To use ESM Analysis in a project::
 
     import esm_analysis
+
+
+The ESM Analysis module allows for creation of several common analyis from
+Python objects.
+
+The main object you probably want to use is: ``EsmAnalysis``. You can create one
+like this, if you are currently working within an experiment directory::
+
+    from esm_analysis import EsmAnalysis
+    analyser = EsmAnalysis()
+
+Optionally, you can give it a path where to start from::
+
+    analyser = EsmAnalysis(exp_base="/work/ba0989/a270077/AWICM_PISM/LGM_011")
+
+You can also tell it where to store analysis::
+
+    analyser = EsmAnalysis(preferred_analysis_dir="/work/ba0989/a270077/store_analysis_here")
+
+Once you have created the ``analyzer`` object, you can use the attached methods
+to quickly get some typical analyses. The methods always return an
+``xarray.Dataset`` object. Typically, the only required argument is the variable
+name::
+
+    t2m_fldmean = analyser.fldmean("temp2")

@@ -2,6 +2,10 @@
 History
 =======
 
+This project was inspired by the many headaches caused by it not existing.
+Here's what has happened so far:
+
+
 0.3.4 (2020-01-31)
 ------------------
 * Docs fixup
