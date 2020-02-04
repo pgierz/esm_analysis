@@ -5,6 +5,10 @@ History
 This project was inspired by the many headaches caused by it not existing.
 Here's what has happened so far:
 
+0.4.2 (2020-02-04)
+------------------
+* Closes #4
+
 0.4.1 (2020-02-04)
 ------------------
 * Minor documentation update.
