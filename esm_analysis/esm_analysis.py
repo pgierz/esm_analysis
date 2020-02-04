@@ -5,7 +5,7 @@
 # @Email:  pgierz@awi.de
 # @Filename: esm_analysis.py
 # @Last modified by:   pgierz
-# @Last modified time: 2020-02-04T07:16:11+01:00
+# @Last modified time: 2020-02-04T08:37:01+01:00
 """
 The ESM Analysis module allows for creation of several common analyis from
 Python objects.
@@ -43,7 +43,32 @@ import cdo
 import yaml
 
 
+def clean_top_of_tree(basedir):
+    """
+    Cleans up top of experiment tree by adding comment character to the first line
+
+    Parameters
+    ----------
+    basedir : str
+        Whre the file ``.top_of_exp_tree`` should be found
+
+    Returns
+    -------
+    None
+    """
+    with open(os.path.join(basedir, ".top_of_exp_tree")) as f:
+        contents = f.readlines()
+    new_contents = []
+    for l in contents:
+        if l.startswith("Top of"):
+            l = "# " + l
+        new_contents.append(l)
+    with open(os.path.join(basedir, ".top_of_exp_tree"), "w") as f:
+        f.write(new_contents)
+
+
 def load_yaml(f):
+    """Returns dictionary of YAML file ``f``"""
     with open(f) as yml:
         return yaml.load(yml, Loader=yaml.SafeLoader)
 
