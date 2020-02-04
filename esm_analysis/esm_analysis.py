@@ -63,14 +63,31 @@ def clean_top_of_tree(basedir):
         if l.startswith("Top of"):
             l = "# " + l
         new_contents.append(l)
-    with open(os.path.join(basedir, ".top_of_exp_tree"), "w") as f:
-        f.write(new_contents)
+    different_contents = contents != new_contents
+    try:
+        with open(os.path.join(basedir, ".top_of_exp_tree"), "w") as f:
+            for l in new_contents:
+                f.write(l)
+    except PermissionError:
+        if different_contents:
+            raise PermissionError(
+                "Needed to fixup .top_of_tree to include comment character for YAML parsing; but permission is denied!"
+            )
+        else:
+            logging.warning(
+                "Probably OK to proceed; but I can't write changes to %s"
+                % os.path.join(basedir, ".top_of_exp_tree")
+            )
 
 
 def load_yaml(f):
     """Returns dictionary of YAML file ``f``"""
     with open(f) as yml:
-        return yaml.load(yml, Loader=yaml.SafeLoader)
+        for l in yml.readlines():
+            logging.debug(l)
+    with open(f) as yml:
+        d = yaml.load(yml, Loader=yaml.SafeLoader)
+    return d or {}
 
 
 def walk_up(bottom):
@@ -182,6 +199,7 @@ class EsmAnalysis(object):
 
         self.EXP_ID = os.path.basename(self.EXP_BASE)
 
+        clean_top_of_tree(self.EXP_BASE)
         self._config = load_yaml(os.path.join(self.EXP_BASE, ".top_of_exp_tree"))
 
         logging.debug(self._config)
