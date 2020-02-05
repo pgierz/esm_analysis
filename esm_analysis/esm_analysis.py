@@ -5,7 +5,7 @@
 # @Email:  pgierz@awi.de
 # @Filename: esm_analysis.py
 # @Last modified by:   pgierz
-# @Last modified time: 2020-02-04T08:37:01+01:00
+# @Last modified time: 2020-02-05T07:17:15+01:00
 """
 The ESM Analysis module allows for creation of several common analyis from
 Python objects.
@@ -478,6 +478,9 @@ class EsmAnalysis(object):
     # Some common operations. If a specific model needs to do this in a
     # different way, you can overload the methods (e.g. FESOM needs to do
     # weighting of the triangles to get correct fldmean)
+    #
+    # FIXME: This is always the same. Probably it's a better idea to do this
+    # automatically?
     def fldmean(self, varname):
         """
         Generates a field mean over the entire model domain for a the specified varname.
@@ -500,5 +503,8 @@ class EsmAnalysis(object):
         return component.yseasmean(varname)
 
     def newest_climatology(self, varname):
+        """
+        Creates the newest climatology mean of the requested variable (30 years)
+        """
         component = self.get_component_for_variable_short_name(varname)
         return component.newest_climatology(varname)
