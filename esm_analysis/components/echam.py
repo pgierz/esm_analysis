@@ -1,6 +1,13 @@
+# @Author: Paul Gierz <pgierz>
+# @Date:   2020-01-31T19:03:13+01:00
+# @Email:  pgierz@awi.de
+# @Filename: echam.py
+# @Last modified by:   pgierz
+# @Last modified time: 2020-02-05T07:16:46+01:00
+
+
 """ Analysis Class for ECHAM """
 
-import glob
 import logging
 import os
 
@@ -81,8 +88,9 @@ class EchamAnalysis(EsmAnalysis):
 
     ################################################################################
     # Spatial Averages:
-    def fldmean(self, varname, file_list):
-        if not os.path.isfile(
+    def fldmean(self, varname):
+        file_list = self._get_files_for_variable_short_name_single_component(varname)
+        oname = (
             self.ANALYSIS_DIR
             + "/"
             + self.EXP_ID
@@ -91,7 +99,8 @@ class EchamAnalysis(EsmAnalysis):
             + "_"
             + varname
             + "_fldmean.nc"
-        ):
+        )
+        if not os.path.isfile(oname):
             if len(file_list) > 1000:
                 print("Processing chunks...")
                 tmp_list = []
@@ -109,32 +118,14 @@ class EchamAnalysis(EsmAnalysis):
                     "name=" + varname, options="-f nc -t echam6", input=file_list
                 )
             logging.info("Finished with generation of 'tmp' file for fldmean")
-            self.CDO.fldmean(
-                input=tmp,
-                output=self.ANALYSIS_DIR
-                + "/"
-                + self.EXP_ID
-                + "_"
-                + self.NAME
-                + "_"
-                + varname
-                + "_fldmean.nc",
-            )
-        return (
-            self.ANALYSIS_DIR
-            + "/"
-            + self.EXP_ID
-            + "_"
-            + self.NAME
-            + "_"
-            + varname
-            + "_fldmean.nc"
-        )
+            return self.CDO.fldmean(input=tmp, output=oname, returnXDataset=True)
+        return xr.open_dataset(oname)
 
     ################################################################################
     # Temporal Averages
-    def yearmean(self, varname, file_list):
-        if not os.path.isfile(
+    def yearmean(self, varname):
+        file_list = self._get_files_for_variable_short_name_single_component(varname)
+        oname = (
             self.ANALYSIS_DIR
             + "/"
             + self.EXP_ID
@@ -143,7 +134,8 @@ class EchamAnalysis(EsmAnalysis):
             + "_"
             + varname
             + "_yearmean.nc"
-        ):
+        )
+        if not os.path.isfile(oname):
             if len(file_list) > 1000:
                 print("Processing chunks...")
                 tmp_list = []
@@ -161,30 +153,12 @@ class EchamAnalysis(EsmAnalysis):
                     "name=" + varname, options="-f nc -t echam6", input=file_list
                 )
             logging.info("Finished with generation of 'tmp' file for yearmean")
-            self.CDO.yearmean(
-                input=tmp,
-                output=self.ANALYSIS_DIR
-                + "/"
-                + self.EXP_ID
-                + "_"
-                + self.NAME
-                + "_"
-                + varname
-                + "_yearmean.nc",
-            )
-        return (
-            self.ANALYSIS_DIR
-            + "/"
-            + self.EXP_ID
-            + "_"
-            + self.NAME
-            + "_"
-            + varname
-            + "_yearmean.nc"
-        )
+            return self.CDO.yearmean(input=tmp, output=oname, returnXDataset=True)
+        return xr.open_dataset(oname)
 
-    def ymonmean(self, varname, file_list):
-        if not os.path.isfile(
+    def ymonmean(self, varname):
+        file_list = self._get_files_for_variable_short_name_single_component(varname)
+        oname = (
             self.ANALYSIS_DIR
             + "/"
             + self.EXP_ID
@@ -193,35 +167,18 @@ class EchamAnalysis(EsmAnalysis):
             + "_"
             + varname
             + "_ymonmean.nc"
-        ):
+        )
+        if not os.path.isfile(oname):
             tmp = self.CDO.select(
                 "name=" + varname, options="-f nc -t echam6", input=file_list
             )
             logging.info("Finished with generation of 'tmp' file for ymonmean")
-            self.CDO.ymonmean(
-                input=tmp,
-                output=self.ANALYSIS_DIR
-                + "/"
-                + self.EXP_ID
-                + "_"
-                + self.NAME
-                + "_"
-                + varname
-                + "_ymonmean.nc",
-            )
-        return (
-            self.ANALYSIS_DIR
-            + "/"
-            + self.EXP_ID
-            + "_"
-            + self.NAME
-            + "_"
-            + varname
-            + "_ymonmean.nc"
-        )
+            return self.CDO.ymonmean(input=tmp, output=oname, returnXDataset=True)
+        return xr.open_dataset(oname)
 
-    def timmean(self, varname, file_list):
-        if not os.path.isfile(
+    def timmean(self, varname):
+        file_list = self._get_files_for_variable_short_name_single_component(varname)
+        oname = (
             self.ANALYSIS_DIR
             + "/"
             + self.EXP_ID
@@ -230,35 +187,18 @@ class EchamAnalysis(EsmAnalysis):
             + "_"
             + varname
             + "_timmean.nc"
-        ):
+        )
+        if not os.path.isfile(oname):
             tmp = self.CDO.select(
                 "name=" + varname, options="-f nc -t echam6", input=file_list
             )
             logging.info("Finished with generation of 'tmp' file for timmean")
-            self.CDO.timmean(
-                input=tmp,
-                output=self.ANALYSIS_DIR
-                + "/"
-                + self.EXP_ID
-                + "_"
-                + self.NAME
-                + "_"
-                + varname
-                + "_timmean.nc",
-            )
-        return (
-            self.ANALYSIS_DIR
-            + "/"
-            + self.EXP_ID
-            + "_"
-            + self.NAME
-            + "_"
-            + varname
-            + "_timmean.nc"
-        )
+            return self.CDO.timmean(input=tmp, output=oname, returnXDataset=True)
+        return xr.open_dataset(oname)
 
-    def yseasmean(self, varname, file_list):
-        if not os.path.isfile(
+    def yseasmean(self, varname):
+        file_list = self._get_files_for_variable_short_name_single_component(varname)
+        oname = (
             self.ANALYSIS_DIR
             + "/"
             + self.EXP_ID
@@ -267,7 +207,8 @@ class EchamAnalysis(EsmAnalysis):
             + "_"
             + varname
             + "_yseasmean.nc"
-        ):
+        )
+        if not os.path.isfile(oname):
             if len(file_list) > 1000:
                 print("Processing chunks...")
                 tmp_list = []
@@ -285,25 +226,5 @@ class EchamAnalysis(EsmAnalysis):
                     "name=" + varname, options="-f nc -t echam6", input=file_list
                 )
             logging.info("Finished with generation of 'tmp' file for yseasmean")
-            return self.CDO.yseasmean(
-                input=tmp,
-                output=self.ANALYSIS_DIR
-                + "/"
-                + self.EXP_ID
-                + "_"
-                + self.NAME
-                + "_"
-                + varname
-                + "_yseasmean.nc",
-                returnXDataset=True,
-            )
-        return xr.open_dataset(
-            self.ANALYSIS_DIR
-            + "/"
-            + self.EXP_ID
-            + "_"
-            + self.NAME
-            + "_"
-            + varname
-            + "_yseasmean.nc"
-        )
+            return self.CDO.yseasmean(input=tmp, output=oname, returnXDataset=True)
+        return xr.open_dataset(oname)
