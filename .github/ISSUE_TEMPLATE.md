@@ -1,6 +1,6 @@
 * ESM Analysis version:
 * Python version:
-* Operating System:
+* Machine Name (if not one of the supercomputers, please state your OS instead):
 
 ### Description
 
