@@ -65,7 +65,7 @@ command I want to use??
 Features
 --------
 
-* Command line interface to quickly create common analyses
-* Python library usage
+* Command line interface: Quickly create common analyses
+* Python library usage: Same analysis as with the CLI, but you get back usable `xarray.Dataset` objects
 * Free software: GNU General Public License v3
 * Documentation: https://esm-tools-analysis.readthedocs.io.
