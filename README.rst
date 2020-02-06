@@ -39,7 +39,7 @@ Calculate AMOC::
 
     esm_analysis amoc
 
-Isn't that better than this?
+Isn't that better than this? (Note that the counterexample is purposefully "over-the-top")
 
 .. code-block:: shell
 
