@@ -5,7 +5,7 @@
 # @Email:  pgierz@awi.de
 # @Filename: esm_analysis.py
 # @Last modified by:   pgierz
-# @Last modified time: 2020-02-04T08:37:01+01:00
+# @Last modified time: 2020-02-06T07:15:12+01:00
 """
 The ESM Analysis module allows for creation of several common analyis from
 Python objects.
@@ -32,11 +32,13 @@ name.
     >>> t2m_fldmean = analyser.fldmean("temp2")
 """
 
+import atexit
 import glob
 import importlib
 import logging
 import os
 import re
+import socket
 import sys
 
 import cdo
@@ -88,6 +90,27 @@ def load_yaml(f):
     with open(f) as yml:
         d = yaml.load(yml, Loader=yaml.SafeLoader)
     return d or {}
+
+
+def _check_cdo_env():
+    """
+    Performs certain "manual" fixes for Python-CDO bindings
+
+    1. If running on ``ollie[01].awi.de``; disables the environmental variable
+       ``CDO=true``.
+    """
+    if "ollie" in socket.gethostname():
+        global OLD_CDO_ENV_VAL
+        OLD_CDO_ENV_VAL = os.environ["CDO"]
+        del os.environ["CDO"]
+
+
+# TODO(pgierz): I'm not sure if this is actually needed; maybe the environment
+# is automatically restored.
+@atexit.register
+def _ollie_restore_cdo_env():
+    if "ollie" in socket.gethostname():
+        os.environ["CDO"] = OLD_CDO_ENV_VAL
 
 
 def walk_up(bottom):
@@ -213,6 +236,7 @@ class EsmAnalysis(object):
         self.SCRIPT_DIR = self.EXP_BASE + "/scripts/"
 
         # Here's yer CDO:
+        _check_cdo_env()
         self.CDO = cdo.Cdo()
 
         # Ensure that the analysis directory exists for the top:
