@@ -62,10 +62,12 @@ The computer should be able to figure out the rest for you. If Google can
 predict where I get my breakfast, why can't my computer figure out what ``CDO``
 command I want to use??
 
-Features
---------
+Features!
+---------
 
-* Command line interface: Quickly create common analyses
-* Python library usage: Same analysis as with the CLI, but you get back usable `xarray.Dataset` objects
-* Free software: GNU General Public License v3
-* Documentation: https://esm-tools-analysis.readthedocs.io.
+* Command line interface: Quickly create common analyses!
+* Python library usage: Same analysis as with the CLI, but you get back usable `xarray.Dataset <http://xarray.pydata.org/en/stable/generated/xarray.Dataset.html>`_ objects! Just do ``temp2_plot = analyzer("temp2").plot()`` to get a matplotlib plot!
+* Free software: GNU General Public License v3!
+* Documentation: https://esm-tools-analysis.readthedocs.io!
+
+
