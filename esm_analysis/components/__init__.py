@@ -3,4 +3,10 @@
 # @Email:  pgierz@awi.de
 # @Filename: __init__.py
 # @Last modified by:   pgierz
-# @Last modified time: 2020-01-31T19:06:01+01:00
+# @Last modified time: 2020-02-10T11:55:02+01:00
+"""
+Specific implementations for the various components each get their own submodule
+"""
+
+from .echam import EchamAnalysis
+from .fesom import FesomAnalysis
