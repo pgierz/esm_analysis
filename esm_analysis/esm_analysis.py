@@ -5,7 +5,7 @@
 # @Email:  pgierz@awi.de
 # @Filename: esm_analysis.py
 # @Last modified by:   pgierz
-# @Last modified time: 2020-02-10T11:07:52+01:00
+# @Last modified time: 2020-02-10T11:21:11+01:00
 """
 The ESM Analysis module allows for creation of several common analyis from
 Python objects.
@@ -385,16 +385,19 @@ class EsmAnalysis(object):
                 logging.debug("Checking: %s = %s", short_name, varname)
                 if short_name == varname:
                     fpattern_list.append(
-                        sorted(
-                            list(
-                                filter(
-                                    re.compile(file_pattern).match,
-                                    [
-                                        self.OUTDATA_DIR + f
-                                        for f in os.listdir(self.OUTDATA_DIR)
-                                    ],
+                        (
+                            file_pattern,
+                            sorted(
+                                list(
+                                    filter(
+                                        re.compile(file_pattern).match,
+                                        [
+                                            self.OUTDATA_DIR + f
+                                            for f in os.listdir(self.OUTDATA_DIR)
+                                        ],
+                                    )
                                 )
-                            )
+                            ),
                         )
                     )
                     # fpattern_list.append(sorted(glob.glob(file_pattern)))
@@ -402,21 +405,36 @@ class EsmAnalysis(object):
             if not self._check_filepattern_choice(varname):
                 # TODO: check filepattern choice
                 print("Multiple file patterns have requested variable %s" % varname)
-                for index, fpattern in enumerate(fpattern_list):
-                    print("[%s] %s" % (index + 1, fpattern[0]))
+                for index, (fpattern, _) in enumerate(fpattern_list):
+                    print("[%s] %s" % (index + 1, fpattern))
                 index_choice = int(input("Please choose a filepattern: ")) - 1
                 # TODO: register filepattern choice
-                self._register_filepattern_choice(varname, fpattern_list[index_choice])
-                return fpattern_list[index_choice]
+                self._register_filepattern_choice(
+                    varname, fpattern_list[index_choice][0]
+                )
+                return fpattern_list[index_choice][1]
             else:
-                return self._check_filepattern_choice(varname)
-        return fpattern_list[0]
+                file_pattern = self._check_filepattern_choice(varname)
+                match_list = sorted(
+                    list(
+                        filter(
+                            re.compile(file_pattern).match,
+                            [
+                                self.OUTDATA_DIR + f
+                                for f in os.listdir(self.OUTDATA_DIR)
+                            ],
+                        )
+                    )
+                )
+                return match_list
+        # Remember: element 0 is the pattern, element 1 are the matching items.
+        return fpattern_list[0][0]
 
     def _check_filepattern_choice(self, varname):
         return self._config.get(varname, {}).get("filepattern_preference")
 
     def _register_filepattern_choice(self, varname, preference):
-        print("You can save your preference for future use to avoide this question.")
+        print("You can save your preference for future use to avoid this question.")
         print(preference[0])
         print("Would you always like to use this pattern for %s" % varname)
         print("[1] Yes")
