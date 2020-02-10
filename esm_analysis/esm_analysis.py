@@ -5,7 +5,7 @@
 # @Email:  pgierz@awi.de
 # @Filename: esm_analysis.py
 # @Last modified by:   pgierz
-# @Last modified time: 2020-02-04T08:37:01+01:00
+# @Last modified time: 2020-02-10T11:07:52+01:00
 """
 The ESM Analysis module allows for creation of several common analyis from
 Python objects.
@@ -399,12 +399,33 @@ class EsmAnalysis(object):
                     )
                     # fpattern_list.append(sorted(glob.glob(file_pattern)))
         if len(fpattern_list) > 1:
-            print("Multiple file patterns have requested variable %s" % varname)
-            for index, fpattern in enumerate(fpattern_list):
-                print("[%s] %s" % (index + 1, fpattern[0]))
-            index_choice = int(input("Please choose a filepattern: ")) - 1
-            return fpattern_list[index_choice]
+            if not self._check_filepattern_choice(varname):
+                # TODO: check filepattern choice
+                print("Multiple file patterns have requested variable %s" % varname)
+                for index, fpattern in enumerate(fpattern_list):
+                    print("[%s] %s" % (index + 1, fpattern[0]))
+                index_choice = int(input("Please choose a filepattern: ")) - 1
+                # TODO: register filepattern choice
+                self._register_filepattern_choice(varname, fpattern_list[index_choice])
+                return fpattern_list[index_choice]
+            else:
+                return self._check_filepattern_choice(varname)
         return fpattern_list[0]
+
+    def _check_filepattern_choice(self, varname):
+        return self._config.get(varname, {}).get("filepattern_preference")
+
+    def _register_filepattern_choice(self, varname, preference):
+        print("You can save your preference for future use to avoide this question.")
+        print(preference[0])
+        print("Would you always like to use this pattern for %s" % varname)
+        print("[1] Yes")
+        print("[2] No")
+        choice = int(input("Save preference? "))
+        if choice == 1:
+            if not self._config.get(varname):
+                self._config[varname] = {}
+            self._config[varname]["filepattern_preference"] = preference
 
     def get_component_for_variable_short_name(self, varname):
         """
