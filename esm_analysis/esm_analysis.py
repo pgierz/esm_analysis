@@ -5,7 +5,7 @@
 # @Email:  pgierz@awi.de
 # @Filename: esm_analysis.py
 # @Last modified by:   pgierz
-# @Last modified time: 2020-02-10T11:21:11+01:00
+# @Last modified time: 2020-02-10T11:24:25+01:00
 """
 The ESM Analysis module allows for creation of several common analyis from
 Python objects.
@@ -459,7 +459,7 @@ class EsmAnalysis(object):
 
     def _register_filepattern_choice(self, varname, preference):
         print("You can save your preference for future use to avoid this question.")
-        print(preference[0])
+        print(preference)
         print("Would you always like to use this pattern for %s" % varname)
         print("[1] Yes")
         print("[2] No")
