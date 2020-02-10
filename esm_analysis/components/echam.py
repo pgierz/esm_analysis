@@ -3,7 +3,7 @@
 # @Email:  pgierz@awi.de
 # @Filename: echam.py
 # @Last modified by:   pgierz
-# @Last modified time: 2020-02-05T07:16:46+01:00
+# @Last modified time: 2020-02-10T10:46:48+01:00
 
 
 """ Analysis Class for ECHAM """
@@ -86,6 +86,20 @@ class EchamAnalysis(EsmAnalysis):
             returnXDataset=True,
         )
 
+    def _process_chunk_files(self, file_list):
+        logging.debug("Processing chunks...")
+        tmp_list = []
+        for files in chunks(file_list, 1000):
+            logging.debug("These files are next:")
+            for f in files:
+                logging.debug(f)
+            tmp_chunk = self.CDO.select(
+                "name=" + varname, options="-f nc -t echam6", input=files
+            )
+            tmp_list.append(tmp_chunk)
+        tmp = self.CDO.cat(input=" ".join(tmp_list))
+        return tmp
+
     ################################################################################
     # Spatial Averages:
     def fldmean(self, varname):
@@ -102,17 +116,7 @@ class EchamAnalysis(EsmAnalysis):
         )
         if not os.path.isfile(oname):
             if len(file_list) > 1000:
-                print("Processing chunks...")
-                tmp_list = []
-                for files in chunks(file_list, 1000):
-                    print("These files are next:")
-                    for f in files:
-                        print(f)
-                    tmp_chunk = self.CDO.select(
-                        "name=" + varname, options="-f nc -t echam6", input=files
-                    )
-                    tmp_list.append(tmp_chunk)
-                tmp = self.CDO.cat(input=" ".join(tmp_list))
+                tmp = self._process_chunk_files(file_list)
             else:
                 tmp = self.CDO.select(
                     "name=" + varname, options="-f nc -t echam6", input=file_list
@@ -137,17 +141,7 @@ class EchamAnalysis(EsmAnalysis):
         )
         if not os.path.isfile(oname):
             if len(file_list) > 1000:
-                print("Processing chunks...")
-                tmp_list = []
-                for files in chunks(file_list, 1000):
-                    print("These files are next:")
-                    for f in files:
-                        print(f)
-                    tmp_chunk = self.CDO.select(
-                        "name=" + varname, options="-f nc -t echam6", input=files
-                    )
-                    tmp_list.append(tmp_chunk)
-                tmp = self.CDO.cat(input=" ".join(tmp_list))
+                tmp = self._process_chunk_files(file_list)
             else:
                 tmp = self.CDO.select(
                     "name=" + varname, options="-f nc -t echam6", input=file_list
@@ -210,17 +204,7 @@ class EchamAnalysis(EsmAnalysis):
         )
         if not os.path.isfile(oname):
             if len(file_list) > 1000:
-                print("Processing chunks...")
-                tmp_list = []
-                for files in chunks(file_list, 1000):
-                    print("These files are next:")
-                    for f in files:
-                        print(f)
-                    tmp_chunk = self.CDO.select(
-                        "name=" + varname, options="-f nc -t echam6", input=files
-                    )
-                    tmp_list.append(tmp_chunk)
-                tmp = self.CDO.cat(input=" ".join(tmp_list))
+                tmp = self._process_chunk_files(file_list)
             else:
                 tmp = self.CDO.select(
                     "name=" + varname, options="-f nc -t echam6", input=file_list
