@@ -5,7 +5,7 @@
 # @Email:  pgierz@awi.de
 # @Filename: esm_analysis.py
 # @Last modified by:   pgierz
-# @Last modified time: 2020-02-10T11:44:42+01:00
+# @Last modified time: 2020-02-10T12:36:40+01:00
 """
 The ESM Analysis module allows for creation of several common analyis from
 Python objects.
@@ -147,6 +147,15 @@ class AnalysisComponent(object):
 
 
 class EsmAnalysis(object):
+
+    NAME = "general"
+    DOMAIN = None
+
+    def _dump_config_back_to_yml(self):
+        with open(os.path.join(self.EXP_BASE, ".top_of_exp_tree"), "w") as f:
+            f.write("# Top of experiment: " + self.EXP_ID + "\n")
+            yaml.dump(self._config)
+
     def __init__(self, exp_base=None, preferred_analysis_dir=None):
         """
         Base Class for Analysis, other component specific analysis classes
@@ -431,19 +440,28 @@ class EsmAnalysis(object):
         return fpattern_list[0][1]
 
     def _check_filepattern_choice(self, varname):
-        return self._config.get(varname, {}).get("filepattern_preference")
+        return (
+            self._config.get(self.NAME, {})
+            .get(varname, {})
+            .get("filepattern_preference")
+        )
 
     def _register_filepattern_choice(self, varname, preference):
         print("You can save your preference for future use to avoid this question.")
         print(preference)
         print("Would you always like to use this pattern for %s" % varname)
-        print("[1] Yes")
-        print("[2] No")
+        print("[1] Yes, always")
+        print("[2] Yes, session only")
+        print("[3] No")
         choice = int(input("Save preference? "))
-        if choice == 1:
-            if not self._config.get(varname):
-                self._config[varname] = {}
-            self._config[varname]["filepattern_preference"] = preference
+        if choice == 1 or choice == 2:
+            if not self._config.get(self.NAME):
+                self._config[self.NAME] = {}
+            if not self._config[self.NAME].get(varname):
+                self._config[self.NAME][varname] = {}
+            self._config[self.NAME][varname]["filepattern_preference"] = preference
+            if choice == 1:
+                self._dump_config_back_to_yml()
 
     def get_component_for_variable_short_name(self, varname):
         """
