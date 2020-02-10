@@ -86,7 +86,7 @@ class EchamAnalysis(EsmAnalysis):
             returnXDataset=True,
         )
 
-    def _process_chunk_files(self, file_list):
+    def _process_chunk_files(self, file_list, varname):
         logging.debug("Processing chunks...")
         tmp_list = []
         for files in chunks(file_list, 1000):
@@ -116,7 +116,7 @@ class EchamAnalysis(EsmAnalysis):
         )
         if not os.path.isfile(oname):
             if len(file_list) > 1000:
-                tmp = self._process_chunk_files(file_list)
+                tmp = self._process_chunk_files(file_list, varname)
             else:
                 tmp = self.CDO.select(
                     "name=" + varname, options="-f nc -t echam6", input=file_list
@@ -141,7 +141,7 @@ class EchamAnalysis(EsmAnalysis):
         )
         if not os.path.isfile(oname):
             if len(file_list) > 1000:
-                tmp = self._process_chunk_files(file_list)
+                tmp = self._process_chunk_files(file_list, varname)
             else:
                 tmp = self.CDO.select(
                     "name=" + varname, options="-f nc -t echam6", input=file_list
@@ -204,7 +204,7 @@ class EchamAnalysis(EsmAnalysis):
         )
         if not os.path.isfile(oname):
             if len(file_list) > 1000:
-                tmp = self._process_chunk_files(file_list)
+                tmp = self._process_chunk_files(file_list, varname)
             else:
                 tmp = self.CDO.select(
                     "name=" + varname, options="-f nc -t echam6", input=file_list
