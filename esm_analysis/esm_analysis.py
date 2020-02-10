@@ -5,7 +5,7 @@
 # @Email:  pgierz@awi.de
 # @Filename: esm_analysis.py
 # @Last modified by:   pgierz
-# @Last modified time: 2020-02-10T11:24:25+01:00
+# @Last modified time: 2020-02-10T11:44:42+01:00
 """
 The ESM Analysis module allows for creation of several common analyis from
 Python objects.
@@ -452,7 +452,7 @@ class EsmAnalysis(object):
                 )
                 return match_list
         # Remember: element 0 is the pattern, element 1 are the matching items.
-        return fpattern_list[0][0]
+        return fpattern_list[0][1]
 
     def _check_filepattern_choice(self, varname):
         return self._config.get(varname, {}).get("filepattern_preference")
