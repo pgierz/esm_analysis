@@ -5,7 +5,7 @@
 # @Email:  pgierz@awi.de
 # @Filename: esm_analysis.py
 # @Last modified by:   pgierz
-# @Last modified time: 2020-02-10T12:36:40+01:00
+# @Last modified time: 2020-02-10T13:52:07+01:00
 """
 The ESM Analysis module allows for creation of several common analyis from
 Python objects.
@@ -177,7 +177,7 @@ class EsmAnalysis(object):
     def _dump_config_back_to_yml(self):
         with open(os.path.join(self.EXP_BASE, ".top_of_exp_tree"), "w") as f:
             f.write("# Top of experiment: " + self.EXP_ID + "\n")
-            yaml.dump(self._config)
+            f.write(yaml.dump(self._config))
 
     def __init__(self, exp_base=None, preferred_analysis_dir=None):
         """
