@@ -1,41 +1,70 @@
+#!/usr/bin/env python3
 # @Author: Paul Gierz <pgierz>
 # @Date:   2020-01-23T13:06:50+01:00
 # @Email:  pgierz@awi.de
 # @Filename: fesom.py
 # @Last modified by:   pgierz
-# @Last modified time: 2020-02-03T15:14:47+01:00
+# @Last modified time: 2020-02-17T07:56:57+01:00
+"""
+Analysis Class for FESOM
 
+This object, ``FesomAnalysis`` provides an easy interface to ``FESOM 1.4`` and
+``FESOM 2.0`` analyses. Notable features:
 
-""" Analysis Class for FESOM """
-
+* Automatic processing with dask: Parallel computing on multiple CPUs when possible.
+* Automatic loading of mesh information
+* Creates and re-uses interpolate weights
+"""
+# Python Standard Library:
 import logging
 import os
+import re
 
-import pyfesom as pf
+# Third-Party Imports
+from dask.diagnostics import ProgressBar
+from dask.distributed import Client
+from regex_engine import generator
 import f90nml
+import numpy as np
+import pyfesom as pf
 import xarray as xr
 
-
+# Local Imports:
 from ..esm_analysis import EsmAnalysis
-from ..scripts.analysis_scripts.fesom import ANALYSIS_fesom_sfc_timmean
 
-twodim_fesom_analysis = ANALYSIS_fesom_sfc_timmean.MainProgram
+# TODO: I'd like this functions in some sort of a utilities folder; they aren't
+# really needed *just* in FESOM:
+def sizeof_fmt(num, suffix="B"):
+    """ Formats a size in bytes to human readable """
+    for unit in ["", "K", "M", "G", "T", "P", "E", "Z"]:
+        if abs(num) < 1024.0:
+            return "%3.1f %s%s" % (num, unit, suffix)
+        num /= 1024.0
+    return "%.1f %s%s" % (num, "Y", suffix)
+
+
+def full_size_of_filelist(flist):
+    """ Given a list of files, gets the full size (in bytes) """
+    total_size = 0
+    for f in flist:
+        total_size += os.stat(f).st_size
+    return total_size
 
 
 class FesomAnalysis(EsmAnalysis):
     """
     Analysis of FESOM simulations
 
-    Most of the methods default to the ones pre-defined in the base class, ``EsmAnalysis``.
 
+    Yeah, we need more documentation. I know.
     """
 
     NAME = "fesom"
     DOMAIN = "ocean"
 
-    def test_meth(self):
-        print(ANALYSIS_fesom_sfc_timmean)
-
+    ############################################################################
+    # INITILIZATION
+    ############################################################################
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -64,6 +93,14 @@ class FesomAnalysis(EsmAnalysis):
         self._variables = self.determine_variable_dict_from_outdata_contents()
         abg = [0, 0, 0] if self.MESH_ROTATED else [50, 15, -90]
         self.MESH = pf.load_mesh(mesh_dir, usepickle=False, get3d=False, abg=abg)
+        self._interpolation_file = os.path.join(
+            self.ANALYSIS_DIR,
+            "_".join([self.EXP_ID, self.NAME, "interpolation_weights"]),
+        )
+
+        print(40 * "- ")
+        print(f"Mesh information for {self.EXP_ID}")
+        print(self.MESH)
 
     def _var_dict_esm_new(self):
         all_outdata_variables = [
@@ -77,6 +114,7 @@ class FesomAnalysis(EsmAnalysis):
             "".join(r"\d" if c.isdigit() else c for c in file_stream)
             for file_stream in all_outdata_variables
         }
+        # FIXME: This is probably wrong
         just_variables = {
             "".join("" if c.isdigit() else c for c in file_stream)[:-1]
             for file_stream in all_outdata_variables
@@ -95,6 +133,188 @@ class FesomAnalysis(EsmAnalysis):
             ret_variables[file_pattern] = {}
             ret_variables[file_pattern][just_variable] = {"short_name": just_variable}
         return ret_variables
+
+    ############################################################################
+    # FILES
+    ############################################################################
+
+    def _get_list_of_relevant_files(self, variable, years=None):
+        """
+        Gets a list of all the files for variable in the odir
+
+        Parameters:
+        -----------
+        variable : str
+            The variable name to match for
+        years : Tuple of ints or None
+            The years you want; this will be used to get a regular expression
+            matching the current years.
+
+        Returns:
+        --------
+        var_list : list
+            A list of filenames with the pattern ``<variable>_fesom_\d+.nc``,
+            sorted by modification time.
+
+        Known Improvements:
+        -------------------
+        This is pretty specific for how output is saved in ``FESOM``.
+        """
+        r = re.compile(self._determine_regex_from_naming_convention(variable, years))
+        # TODO: This is actually a bit double logic, we already have the list of
+        # variables in the self._variables dict
+        olist = [
+            self.OUTDATA_DIR + "/" + f
+            for f in os.listdir(self.OUTDATA_DIR)
+            if r.match(f)
+        ]
+        olist.sort(key=lambda x: os.path.getmtime(x))
+        # FIXME: This depends on how many years we actually want to get. Default
+        # is newest 30?
+        if years == None:
+            olist = olist[-30:]
+        return olist
+
+    def _determine_regex_from_naming_convention(self, variable, years=None):
+        if years:
+            regex_years = generator().numerical_range(years[0], years[1]).strip("^$")
+        else:
+            regex_years = r"\d+"
+
+        if self.NAMING_CONVENTION == "esm_classic":
+            return variable + "_fesom_" + regex_years + "0101.nc"
+        if self.NAMING_CONVENTION == "esm_new":
+            # FIXME: Can the EXP_ID be here?
+            return ".*_fesom_" + variable + "_" + regex_years + "0101.nc"
+        if self.NAMING_CONVENTION == "legacy":
+            return "fesom." + regex_years + "0101" + ".oce.mean.nc"
+        raise ValueError("Unknown naming convention specified!")
+
+    def _load_data(self, variable, years=None):
+        olist = self._get_list_of_relevant_files(variable, years)
+        self.ds = xr.open_mfdataset(olist, parallel=True)
+
+    ############################################################################
+    # LEVELwISE OUTPUT
+    ############################################################################
+
+    def _select_appropriate_level(self):
+        print(
+            "\nLoading calculations into actual memory for saving (may take a while):"
+        )
+        if not self.LEVELWISE_OUTPUT:
+            level_data, elem_no_nan = pf.get_data(
+                self.ds_timmean.variables[self.variable][:, :].mean(axis=0),
+                self.mesh,
+                0,
+            )
+        else:
+            level_data = self.ds_timmean.variables[self.variable].values
+            timestep = np.expand_dims(self.ds.time.mean().values, 0)
+        self.level_data = level_data
+
+    def _select_timesteps(self, timintv=None):
+        """
+        Assigns a timestep attribute based upon user specifications
+
+        Parameters
+        ----------
+        timintv : str
+            A time interval to select, should conform to ``xarray`` standards
+            for selecting time as: ds[timintv]
+
+            Examples could be "time.DJA"...?
+        """
+        if timintv is not None:
+            self.timestep = self.ds_timmean[timintv].values
+        else:
+            self.timestep = timestep
+
+    ############################################################################
+    # INTERPOLATION
+    ############################################################################
+
+    def _interpolation_to_dataarray(self, variable):
+        """
+        After interpolation, this method can be used to turn the resulting
+        object into a DataArray
+
+        Parameters
+        ----------
+        variable : str
+            The name the variable should get inside the DataArray object.
+        """
+        print("\n Generating an DataArray object for saving")
+        self.interpolated_ds = xr.DataArray(
+            self.nearest,
+            dims=["time", "lat", "lon"],
+            coords=[self.timestep, self.lat, self.lon],
+            name=variable,
+        )
+
+    def _prepare_for_interpolation(self):
+        """
+        Creates lats and lons attributes to be used during interpolation
+        """
+        # TODO: This probably doesn't need to be here and can happen in the init
+        self.lon = np.linspace(-180, 180, 1440)
+        self.lat = np.linspace(-90, 90, 720)
+        self.lons, self.lats = np.meshgrid(self.lon, self.lat)
+
+    def _interpolation_weights_available(self):
+        """
+        Checks if the interpolation weight file can be found
+
+        Returns
+        -------
+        bool : File available or not
+        """
+        return os.path.isfile(self._interpolation_file)
+
+    def _calculate_weights_distances(self):
+        distances, inds = pf.create_indexes_and_distances(
+            self.MESH, self.lons, self.lats, k=10, n_jobs=2
+        )
+        return distances, inds
+
+    def _load_or_create_weights_distances(self):
+        if not self._interpolation_weights_available():
+            distances, inds = self._calculate_weights_distances()
+        else:
+            pass
+
+    def _interpolate_to_regular_grid(self):
+        """
+        Calls ``pf.fesom2regular`` to interpolate to a regular grid using
+        nearest-neighbor interpolation.
+        """
+        # TODO: It'd be nice to include the math in the method docstring along
+        # with a reference
+        #
+        # NOTE: This probably doesn't need to be a private method
+        print(
+            "\nPerforming nearest-neighbor interpolation onto a 0.25 x 0.25 degree regular grid:"
+        )
+        # QUESTION: This seems to loop over all the levels. Is that really what
+        # we want here?
+        if self.timintv is not None:
+            nearest = []
+
+            for level_data_tmp in self.level_data:
+                nearest.append(
+                    pf.fesom2regular(
+                        level_data_tmp, self.MESH, self.lons, self.lats, how="nn"
+                    )
+                )
+            self.nearest = nearest
+        else:
+            nearest = pf.fesom2regular(
+                self.level_data, self.MESH, self.lons, self.lats, how="nn"
+            )
+            # Add an empty array dimension for the timestep
+            self.nearest = np.expand_dims(nearest, axis=0)
+
+    ############################################################################
 
     def determine_variable_dict_from_outdata_contents(self):
         # FIXME: File patterns are inconsistent, this is a "bad feature" in
