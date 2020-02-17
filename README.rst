@@ -38,6 +38,10 @@ Get a climatology::
 Calculate AMOC::
 
     esm_analysis amoc
+    
+Figure out how long your run takes::
+
+    esm_analysis logfile-stats ${PATH_TO_LOG_FILE}
 
 Isn't that better than this? (Note that the counterexample is purposefully "over-the-top")
 
