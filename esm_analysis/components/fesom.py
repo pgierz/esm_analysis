@@ -4,7 +4,7 @@
 # @Email:  pgierz@awi.de
 # @Filename: fesom.py
 # @Last modified by:   pgierz
-# @Last modified time: 2020-02-17T07:56:57+01:00
+# @Last modified time: 2020-02-17T08:40:27+01:00
 """
 Analysis Class for FESOM
 
@@ -98,9 +98,14 @@ class FesomAnalysis(EsmAnalysis):
             "_".join([self.EXP_ID, self.NAME, "interpolation_weights"]),
         )
 
+        self.client = Client()
+
         print(40 * "- ")
         print(f"Mesh information for {self.EXP_ID}")
-        print(self.MESH)
+        print(self.MESH.__repr__())
+
+        print(40 * "- ")
+        print(f"Dask dashboard information {self.client}")
 
     def _var_dict_esm_new(self):
         all_outdata_variables = [
@@ -280,8 +285,11 @@ class FesomAnalysis(EsmAnalysis):
     def _load_or_create_weights_distances(self):
         if not self._interpolation_weights_available():
             distances, inds = self._calculate_weights_distances()
+            np.savez(self._interpolation_file, distances=distances, inds=inds)
         else:
-            pass
+            npzfile = np.load(self._interpolation_file + ".npz")
+            distances, inds = npzfile["distances"], npzfile["inds"]
+        return distances, inds
 
     def _interpolate_to_regular_grid(self):
         """
@@ -297,19 +305,32 @@ class FesomAnalysis(EsmAnalysis):
         )
         # QUESTION: This seems to loop over all the levels. Is that really what
         # we want here?
+
+        distances, inds = self._load_or_create_weights_distances()
+
         if self.timintv is not None:
             nearest = []
 
             for level_data_tmp in self.level_data:
                 nearest.append(
                     pf.fesom2regular(
-                        level_data_tmp, self.MESH, self.lons, self.lats, how="nn"
+                        level_data_tmp,
+                        self.MESH,
+                        self.lons,
+                        self.lats,
+                        distances=distances,
+                        inds=inds,
                     )
                 )
             self.nearest = nearest
         else:
             nearest = pf.fesom2regular(
-                self.level_data, self.MESH, self.lons, self.lats, how="nn"
+                self.level_data,
+                self.MESH,
+                self.lons,
+                self.lats,
+                distances=distances,
+                inds=inds,
             )
             # Add an empty array dimension for the timestep
             self.nearest = np.expand_dims(nearest, axis=0)
