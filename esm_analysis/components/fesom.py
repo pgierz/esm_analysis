@@ -4,7 +4,7 @@
 # @Email:  pgierz@awi.de
 # @Filename: fesom.py
 # @Last modified by:   pgierz
-# @Last modified time: 2020-02-17T08:50:42+01:00
+# @Last modified time: 2020-02-17T09:01:11+01:00
 """
 Analysis Class for FESOM
 
@@ -199,7 +199,7 @@ class FesomAnalysis(EsmAnalysis):
         olist = self._get_list_of_relevant_files(variable, years)
         print(f"Loading files for {variable}")
         print(f"{len(olist)} files --> {sizeof_fmt(full_size_of_filelist(olist))}")
-        self.ds = xr.open_mfdataset(olist, parallel=True)
+        self.ds = xr.open_mfdataset(olist, parallel=True, combine="by_coords")
 
     ############################################################################
     # LEVELwISE OUTPUT
