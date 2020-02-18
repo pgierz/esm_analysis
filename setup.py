@@ -11,7 +11,7 @@ with open("README.rst") as readme_file:
 with open("HISTORY.rst") as history_file:
     history = history_file.read()
 
-requirements = ["cdo", "Click>=6.0", "pandas", "tabulate", "regex-engine", "pyyaml"]
+requirements = ["cdo", "Click>=6.0", "pandas", "tabulate", "regex-engine", "pyyaml", "dask", "distributed"]
 
 setup_requirements = []
 
