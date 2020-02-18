@@ -4,7 +4,7 @@
 # @Email:  pgierz@awi.de
 # @Filename: fesom.py
 # @Last modified by:   pgierz
-# @Last modified time: 2020-02-17T09:01:11+01:00
+# @Last modified time: 2020-02-18T07:27:50+01:00
 """
 Analysis Class for FESOM
 
@@ -31,32 +31,23 @@ import xarray as xr
 
 # Local Imports:
 from ..esm_analysis import EsmAnalysis
-
-# TODO: I'd like this functions in some sort of a utilities folder; they aren't
-# really needed *just* in FESOM:
-def sizeof_fmt(num, suffix="B"):
-    """ Formats a size in bytes to human readable """
-    for unit in ["", "K", "M", "G", "T", "P", "E", "Z"]:
-        if abs(num) < 1024.0:
-            return "%3.1f %s%s" % (num, unit, suffix)
-        num /= 1024.0
-    return "%.1f %s%s" % (num, "Y", suffix)
-
-
-def full_size_of_filelist(flist):
-    """ Given a list of files, gets the full size (in bytes) """
-    total_size = 0
-    for f in flist:
-        total_size += os.stat(f).st_size
-    return total_size
+from ..esm_analysis.utils import sizeof_fmt, full_size_of_filelist
 
 
 class FesomAnalysis(EsmAnalysis):
     """
-    Analysis of FESOM simulations
+    Analysis of FESOM simulations. Same methods you know from ``ECHAM6`` but for
+    ``FESOM``. The module overview gives a good idea of the features of this
+    class. See the documentation of public methods for more info.
 
 
-    Yeah, we need more documentation. I know.
+    Building a ``FesomAnalysis`` Object
+    -----------------------------------
+    The trickiest thing about using this class is correctly instanciating the
+    ``FesomAnalysis`` class. There currently are **only** optional arguments.
+
+
+
     """
 
     NAME = "fesom"
@@ -86,8 +77,11 @@ class FesomAnalysis(EsmAnalysis):
             ].split("=")[-1]
 
         namelist_config = f90nml.read(self.CONFIG_DIR + "/namelist.config")
+        # FIXME: Should be user specifiable:
         self.LEVELWISE_OUTPUT = namelist_config["inout"]["levelwise_output"]
+        # FIXME: Should be user specifiable:
         self.MESH_ROTATED = self._config.get("mesh_rotated", False)
+        # FIXME: Should be user specifiable:
         self.NAMING_CONVENTION = self._config.get("naming_convention", "esm_new")
 
         self._variables = self.determine_variable_dict_from_outdata_contents()
@@ -186,38 +180,61 @@ class FesomAnalysis(EsmAnalysis):
         else:
             regex_years = r"\d+"
 
+        # NOTE: Make sure that your regular expression does **EXACT** matches to
+        # avoid problems later on in the program. Example:
+        # ${EXP_ID}_fesom_so_18[56]?0101.nc matches and
+        # ${EXP_ID}_fesom_so_18[56]?0101.nc.monmean does not!!!!
         if self.NAMING_CONVENTION == "esm_classic":
-            return variable + "_fesom_" + regex_years + "0101.nc"
+            return "^" + variable + "_fesom_" + regex_years + "0101.nc$"
         if self.NAMING_CONVENTION == "esm_new":
-            # FIXME: Can the EXP_ID be here?
-            return ".*_fesom_" + variable + "_" + regex_years + "0101.nc"
+            return (
+                "^"  # Start of match
+                + self.EXP_ID
+                + "_fesom_"
+                + variable
+                + "_"
+                + regex_years
+                + "0101.nc"
+                + "$"  # End of match
+            )
         if self.NAMING_CONVENTION == "legacy":
-            return "fesom." + regex_years + "0101" + ".oce.mean.nc"
+            return "^fesom." + regex_years + "0101" + ".oce.mean.nc$"
         raise ValueError("Unknown naming convention specified!")
 
     def _load_data(self, variable, years=None):
         olist = self._get_list_of_relevant_files(variable, years)
         print(f"Loading files for {variable}")
         print(f"{len(olist)} files --> {sizeof_fmt(full_size_of_filelist(olist))}")
-        self.ds = xr.open_mfdataset(olist, parallel=True, combine="by_coords")
+        self.ds = xr.open_mfdataset(
+            olist, parallel=True, combine="by_coords", chunks={"time": 10}
+        )
 
     ############################################################################
     # LEVELwISE OUTPUT
     ############################################################################
 
-    def _select_appropriate_level(self):
-        print(
-            "\nLoading calculations into actual memory for saving (may take a while):"
-        )
+    def _select_level_0(self):
+        """
+        Gets the top level of ``self.ds``; automatically handles
+        attribute ``LEVELWISE_OUTPUT`` correct
+
+        Note
+        ----
+            This method will **modify** ``self.level_data``
+        """
+        # FIXME (General): This function apparently needs a variable. Shouldn't
+        # being able to get level 0 be irrelevant which variable I actually
+        # want?
         if not self.LEVELWISE_OUTPUT:
             level_data, elem_no_nan = pf.get_data(
-                self.ds_timmean.variables[self.variable][:, :].mean(axis=0),
-                self.mesh,
-                0,
+                self.ds.variables[self.variable][:, :], self.MESH, 0
             )
         else:
-            level_data = self.ds_timmean.variables[self.variable].values
-            timestep = np.expand_dims(self.ds.time.mean().values, 0)
+            # FIXME: This looks wrong for two reasons:
+            # 1) What's self.variable?
+            # 2) Values triggers a calculation, which we don't want until the
+            #    very end...
+            level_data = self.ds.variables[self.variable].values
         self.level_data = level_data
 
     def _select_timesteps(self, timintv=None):
