@@ -1,3 +1,11 @@
+# @Author: Paul Gierz <pgierz>
+# @Date:   2020-02-04T13:13:30+01:00
+# @Email:  pgierz@awi.de
+# @Filename: setup.py
+# @Last modified by:   pgierz
+# @Last modified time: 2020-02-18T08:00:45+01:00
+
+
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
@@ -30,11 +38,6 @@ setup(
         "Intended Audience :: Developers",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Natural Language :: English",
-        "Programming Language :: Python :: 2",
-        "Programming Language :: Python :: 2.7",
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.4",
-        "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
     ],

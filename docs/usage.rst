@@ -48,6 +48,16 @@ near surface air temperature. From anywhere in the experiment, just say::
 * Make an analysis directory for you
 * Generate a file ``${EXP_ID}_echam6_temp2_fldmean.nc``
 
+===========
+Preferences
+===========
+
+Certain parts of ``esm_analysis`` can be configured. In particular, it is
+possible to control if filepatterns for certain variables are saved or not. As
+an example, imagine if you wanted to get a ``fldmean`` for the variable
+``tsurf``. By default, the
+
+
 =============
 Library Usage
 =============
@@ -72,6 +82,12 @@ Optionally, you can give it a path where to start from::
 You can also tell it where to store analysis::
 
     analyser = EsmAnalysis(preferred_analysis_dir="/work/ba0989/a270077/store_analysis_here")
+
+The ``analyser`` that was just created still needs to be initialized. This
+serves to figure out which components you were using and to populate information
+regarding which variables can be found in which files::
+
+    analyser.initialize_analysis_components()
 
 Once you have created the ``analyzer`` object, you can use the attached methods
 to quickly get some typical analyses. The methods always return an
