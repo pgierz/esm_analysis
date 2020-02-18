@@ -4,7 +4,7 @@
 # @Email:  pgierz@awi.de
 # @Filename: fesom.py
 # @Last modified by:   pgierz
-# @Last modified time: 2020-02-18T07:27:50+01:00
+# @Last modified time: 2020-02-18T08:09:24+01:00
 """
 Analysis Class for FESOM
 
@@ -31,7 +31,7 @@ import xarray as xr
 
 # Local Imports:
 from ..esm_analysis import EsmAnalysis
-from ..esm_analysis.utils import sizeof_fmt, full_size_of_filelist
+from ..utils import sizeof_fmt, full_size_of_filelist
 
 
 class FesomAnalysis(EsmAnalysis):
