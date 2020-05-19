@@ -471,9 +471,9 @@ class EsmAnalysis(object):
             for index, component in enumerate(multi_comps):
                 print("[%s] %s" % (index + 1, component.NAME))
             index_choice = int(input("Please choose a component: ")) - 1
-            return multi_comps[index_choice]
+            return fpattern_list[index_choice][0], multi_comps[index_choice]
         else:
-            return multi_comps[0]
+            return fpattern_list[0][0], multi_comps[0]
 
     # Some common operations. If a specific model needs to do this in a
     # different way, you can overload the methods (e.g. FESOM needs to do
@@ -482,23 +482,23 @@ class EsmAnalysis(object):
         """
         Generates a field mean over the entire model domain for a the specified varname.
         """
-        component = self.get_component_for_variable_short_name(varname)
-        return component.fldmean(varname)
+        flist, component = self.get_component_for_variable_short_name(varname)
+        return component.fldmean(varname, flist)
 
     def ymonmean(self, varname):
         """
         Generates a ymonmean over the entire model domain for the specified varname.
         """
-        component = self.get_component_for_variable_short_name(varname)
-        return component.ymonmean(varname)
+        flist, component = self.get_component_for_variable_short_name(varname)
+        return component.ymonmean(varname, flist)
 
     def yseasmean(self, varname):
         """
         Generates a yseasmean over the entire model domain for the specified varname.
         """
-        component = self.get_component_for_variable_short_name(varname)
-        return component.yseasmean(varname)
+        flist, component = self.get_component_for_variable_short_name(varname)
+        return component.yseasmean(varname, flist)
 
     def newest_climatology(self, varname):
-        component = self.get_component_for_variable_short_name(varname)
+        _, component = self.get_component_for_variable_short_name(varname)
         return component.newest_climatology(varname)

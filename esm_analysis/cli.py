@@ -132,7 +132,7 @@ def yseasmean(varname, preferred_analysis_dir=None):
 @main.command()
 @click.argument("varname")
 @click.option("--preferred_analysis_dir", default=None)
-def newest_climatology(varname, preferred_analysis_dir):
+def climmean(varname, preferred_analysis_dir):
     """
     Newest climatology
     """
