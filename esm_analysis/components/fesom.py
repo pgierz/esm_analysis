@@ -138,7 +138,7 @@ class FesomAnalysis(EsmAnalysis):
             + "_climmean.nc"
         )
 
-    def yseasmean(self, varname):
+    def yseasmean(self, varname, flist):
         logging.debug("This method is trying to work on: %s", varname)
         try:
             p = twodim_fesom_analysis(
@@ -173,8 +173,9 @@ class FesomAnalysis(EsmAnalysis):
             + "_yseasmean.nc"
         )
 
-    def ymonmean(self, varname):
+    def ymonmean(self, varname, flist):
         logging.debug("This method is trying to work on: %s", varname)
+        # Note that the argument flist isn't used, but needed for echam
         try:
             p = twodim_fesom_analysis(
                 varname,
